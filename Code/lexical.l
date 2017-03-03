@@ -1,8 +1,11 @@
+%option yylineno
 %{
 	/* NONE */
 %}
-delim	[ \t\n]
+
+delim	[ \t\n\r]
 ws		{delim}+
+
 /* punctuation */
 SEMI	";"
 COMMA	","
@@ -22,18 +25,24 @@ LB		"["
 RB		"]"
 LC		"{"
 RC		"}"
+ANNO	"//"
+LA		"/*"
+RA		"*/"
+
 /* reserved words */
-TYPE	[(int)(float)]
+TYPE	"int"|"float"
 STRUCT	"struct"
 RETURN	"return"
 IF		"if"
 ELSE	"else"
 WHILE	"while"
+
+/* formal */
 DIGIT [0-9]
 INT	0|[1-9]{DIGIT}*
 FLOAT	{DIGIT}+\.{DIGIT}+
 LETTER_ [_a-zA-Z]
-ID	{LETTER_}({LETTER_}|{DIGHT})*
+ID	{LETTER_}({LETTER_}|{DIGIT})*
 
 %%
 {ws}	{ /* do nothing */ }
@@ -55,13 +64,19 @@ ID	{LETTER_}({LETTER_}|{DIGHT})*
 {RB}	{ printf("RB\n"); }
 {LC}	{ printf("LC\n"); }
 {RC}	{ printf("RC\n"); }
+{ANNO}	{ printf("ANNO\n"); }
+{LA}	{ printf("LA\n"); }
+{RA}	{ printf("RA\n"); }
 {TYPE}	{ printf("TYPE\n"); }
 {STRUCT}	{ printf("STRUCT\n"); }
 {RETURN}	{ printf("RETURN\n"); }
 {IF}	{ printf("IF\n"); }
 {ELSE}	{ printf("ELSE\n"); }
 {WHILE}	{ printf("WHILE\n"); }
-.		{ printf("UNKNOWN"); }
+{FLOAT}	{ printf("FLOAT\n"); }
+{INT}	{ printf("INT\n"); }
+{ID}	{ printf("ID\n"); }
+.		{ printf("Error type A at Line %d: Mysterious string \"%s\".\n", yylineno, yytext); }
 %%
 void donothing(){
 }

@@ -1,34 +1,9 @@
-;
-,
-=
->
-<
->=
-<=
-==
-!=
-+
--
-*
-/
-&&
-||
-.
-!
-(
-)
-[
-]
+int main()
 {
+	int float i = 1;
+	int j = ~2;
+	.7
+	3.
 }
-struct
-return
-if
-else
-while
-56464
-0
-123
-_awf98aw
-3453.56
-0.235
+// aefjhaflafa
+/* ad aef awd 98 sf9_wa */

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+extern int yylineno;
+
 int main(int argc, char** argv) {
 	int i, totchars = 0, totwords = 0,totlines = 0;
 	if (argc < 2) {
@@ -14,6 +16,7 @@ int main(int argc, char** argv) {
 			return 1;
 		}
 		yyrestart(f);
+		yylineno = 1;
 		yylex();
 		fclose(f);
 	}
