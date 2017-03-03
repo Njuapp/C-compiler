@@ -4,7 +4,7 @@
 %}
 
 delim	[ \t\n\r]
-ws		{delim}+
+WS		{delim}+
 
 /* punctuation */
 SEMI	";"
@@ -25,9 +25,10 @@ LB		"["
 RB		"]"
 LC		"{"
 RC		"}"
-ANNO	"//"
-LA		"/*"
-RA		"*/"
+COMM	"//".*
+comment	([^\*]|(\*)*[^\*/])*
+COMS	"/*"{comment}(\*)*"*/"
+COME	"*/"
 
 /* reserved words */
 TYPE	"int"|"float"
@@ -37,15 +38,16 @@ IF		"if"
 ELSE	"else"
 WHILE	"while"
 
-/* formal */
-DIGIT [0-9]
-INT	0|[1-9]{DIGIT}*
-FLOAT	{DIGIT}+\.{DIGIT}+
-LETTER_ [_a-zA-Z]
-ID	{LETTER_}({LETTER_}|{DIGIT})*
+/* format */
+digit [0-9]
+INT	0|[1-9]{digit}*
+FLOAT	{digit}+\.{digit}+
+letter_ [_a-zA-Z]
+/* wrong format?? */
+ID	{letter_}({letter_}|{digit})*
 
 %%
-{ws}	{ /* do nothing */ }
+{WS}	{ /* do nothing */ }
 {SEMI}	{ printf("SEMI\n"); }
 {COMMA}	{ printf("COMMA\n"); }
 {RELOP}	{ printf("RELOP\n"); }
@@ -64,9 +66,9 @@ ID	{LETTER_}({LETTER_}|{DIGIT})*
 {RB}	{ printf("RB\n"); }
 {LC}	{ printf("LC\n"); }
 {RC}	{ printf("RC\n"); }
-{ANNO}	{ printf("ANNO\n"); }
-{LA}	{ printf("LA\n"); }
-{RA}	{ printf("RA\n"); }
+{COMM}	{ printf("ANNO\n"); }
+{COMS}	{ printf("ANNS\n"); }
+{COME}	{ printf("Error type A at Line %d: Wrong */.\n",yylineno); }
 {TYPE}	{ printf("TYPE\n"); }
 {STRUCT}	{ printf("STRUCT\n"); }
 {RETURN}	{ printf("RETURN\n"); }
