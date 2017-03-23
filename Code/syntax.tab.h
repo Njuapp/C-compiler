@@ -46,35 +46,33 @@ extern int yydebug;
   enum yytokentype
   {
     INT = 258,
-    ID = 259,
-    FLOAT = 260,
+    FLOAT = 259,
+    ID = 260,
     SEMI = 261,
     COMMA = 262,
-    ASSIGNOP = 263,
-    OR = 264,
-    AND = 265,
-    RELOP = 266,
-    MINUS = 267,
-    PLUS = 268,
-    STAR = 269,
-    DIV = 270,
-    NOT = 271,
-    DOT = 272,
-    LP = 273,
-    RP = 274,
-    LB = 275,
-    RB = 276,
-    LC = 277,
-    RC = 278,
-    COMM = 279,
-    COMS = 280,
-    TYPE = 281,
-    STRUCT = 282,
-    RETURN = 283,
-    IF = 284,
-    WHILE = 285,
-    LOWER_THAN_ELSE = 286,
-    ELSE = 287
+    TYPE = 263,
+    STRUCT = 264,
+    RETURN = 265,
+    IF = 266,
+    ELSE = 267,
+    WHILE = 268,
+    ASSIGNOP = 269,
+    RELOP = 270,
+    PLUS = 271,
+    MINUS = 272,
+    STAR = 273,
+    DIV = 274,
+    OR = 275,
+    AND = 276,
+    NOT = 277,
+    DOT = 278,
+    LP = 279,
+    RP = 280,
+    LB = 281,
+    RB = 282,
+    LC = 283,
+    RC = 284,
+    LOWER_THAN_ELSE = 285
   };
 #endif
 
@@ -85,11 +83,10 @@ union YYSTYPE
 {
 #line 5 "./syntax.y" /* yacc.c:1909  */
 
-	int type_int;
-	float type_float;
-	double type_double;
+	struct GrammerTree* a;
+	double d;
 
-#line 93 "./syntax.tab.h" /* yacc.c:1909  */
+#line 90 "./syntax.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

@@ -4,7 +4,6 @@ int yyparse();
 void yyrestart(FILE* f);
 
 extern int yylineno;
-
 int main(int argc, char** argv) {
 	if(argc <= 1) return 1;
 	int i;

@@ -1,7 +1,8 @@
 int main()
 {
-	int float i = 1;
-	int j = ~2;
+	float i = 1;
+	int j[13] = -2;
+	return 0;
 }
 // aefjhaflafa	af ewf3513    
 /* ad aef awd 98 sf9_wa */
