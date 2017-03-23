@@ -1,15 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+int yyparse();
+void yyrestart(FILE* f);
 
 extern int yylineno;
 
 int main(int argc, char** argv) {
-	int i, totchars = 0, totwords = 0,totlines = 0;
-	if (argc < 2) {
-		yyparse();
-		//yylex();
-		return 0;
-	}
+	if(argc <= 1) return 1;
+	int i;
 	for (i = 1; i < argc; i++) {
 		FILE *f = fopen(argv[i], "r");
 		if(!f) {
@@ -21,7 +19,5 @@ int main(int argc, char** argv) {
 		yyparse();
 		fclose(f);
 	}
-	if(argc > 1)
-		;//printf("%8d%8d%8d total\n", totlines, totwords, totchars);
 	return 0;
 }

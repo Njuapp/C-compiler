@@ -1,12 +1,13 @@
 %{
 #include "lex.yy.c"
+int yyerror(char *);
 %}
 %union{
 	int type_int;
 	float type_float;
 	double type_double;
 }
-
+%locations
 %token <type_int> INT
 %token ID
 %token <type_float> FLOAT
@@ -101,19 +102,20 @@ Exp	:Exp ASSIGNOP Exp {$1 = $3;}
 	|Exp MINUS Exp	{$$ = $1 - $3;}
 	|Exp STAR Exp	{$$ = $1 * $3;}
 	|Exp DIV Exp	{$$ = $1 / $3;}
-	|LP Exp RP	
+	|LP Exp RP	{$$ = $2;}	
 	|MINUS Exp	{$$ = - $2;}
-	|NOT Exp
-	|ID LP Args RP	
-	|ID LP RP
+	|NOT Exp	{$$ = !$2;}
+	|ID LP Args RP
+	|ID LP RP	
 	|Exp LB Exp RB
 	|Exp DOT ID	
 	|ID
-	|INT
-	|FLOAT
+	|INT		{$$ = $1;}
+	|FLOAT		{$$ = $1;}
 	;
 Args	:Exp COMMA Args
 	|Exp
 	;
-
-%% 
+%%
+void do_nothing(){
+}

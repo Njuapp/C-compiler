@@ -10,7 +10,6 @@
 	#include "syntax.tab.h"
 %}
 
-
 delim	[ \t\n\r]
 WS		{delim}+
 
@@ -36,7 +35,6 @@ RC		"}"
 COMM	"//".*
 comment	([^\*]|(\*)*[^\*/])*
 COMS	"/*"{comment}(\*)*"*/"
-COME	"*/"
 
 
 /* reserved words */
@@ -76,9 +74,8 @@ ID	{letter_}({letter_}|{digit})*
 {RB}	{ return RB; }
 {LC}	{ return LC; }
 {RC}	{ return RC; }
-{COMM}	{ return ANNO; }
-{COMS}	{ return ANNS; }
-{COME}	{ printf("Error type A at Line %d: Wrong */.\n",yylineno); }
+{COMM}	{ /*do nothing*/ }
+{COMS}	{ /*do nothing*/ }
 {TYPE}	{ return TYPE; }
 {STRUCT}	{ return STRUCT; }
 {RETURN}	{ return RETURN; }
@@ -86,10 +83,10 @@ ID	{letter_}({letter_}|{digit})*
 {ELSE}	{ return ELSE; }
 {WHILE}	{ return WHILE; }
 {FLOAT}	{ 
-	yylval = atof(yytext);
+	yylval.type_int = atof(yytext);
 	return FLOAT; }
 {INT}	{ 
-	yylval = atoi(yytext); 
+	yylval.type_float = atoi(yytext); 
 	return INT; }
 {ID}	{ return ID; }
 .		{ printf("Error type A at Line %d: Mysterious string \"%s\".\n", yylineno, yytext); }
