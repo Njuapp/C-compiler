@@ -1,6 +1,7 @@
 %{
 #include "lex.yy.c"
 void yyerror(char* msg,...);
+extern int lexerr;
 %}
 %union{
 	struct GrammerTree* a;
@@ -10,7 +11,6 @@ void yyerror(char* msg,...);
 %token <a> INT FLOAT
 %token <a>ID SEMI COMMA TYPE STRUCT RETURN IF ELSE WHILE ASSIGNOP
 %token <a>RELOP PLUS MINUS STAR DIV OR AND NOT DOT LP RP LB RB LC RC
-
 /*priority definition*/
 %right ASSIGNOP
 %left  OR
@@ -30,6 +30,7 @@ void yyerror(char* msg,...);
 %%
 Program :ExtDefList{
 		$$=create("Program",1,$1);
+		if(!lexerr)
 		eval($$,0);
 		}
 	;
@@ -77,6 +78,7 @@ StmtList:Stmt StmtList{$$=create("StmtList",2,$1,$2);}
 	| {$$=create("StmtList",0,-1);}
 	;
 Stmt:Exp SEMI {$$=create("Stmt",2,$1,$2);}
+	|error SEMI {}
 	|Compst {$$=create("Stmt",1,$1);}
 	|RETURN Exp SEMI {$$=create("Stmt",3,$1,$2,$3);}
 	|IF LP Exp RP Stmt {$$=create("Stmt",5,$1,$2,$3,$4,$5);}

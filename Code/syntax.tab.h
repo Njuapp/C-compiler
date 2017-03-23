@@ -81,7 +81,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 5 "./syntax.y" /* yacc.c:1909  */
+#line 6 "./syntax.y" /* yacc.c:1909  */
 
 	struct GrammerTree* a;
 	double d;

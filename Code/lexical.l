@@ -7,11 +7,12 @@
 		yylloc.last_column = yycolumn + yyleng - 1;\
 		yycolumn += yyleng;
 	#include <stdlib.h>
+	int lexerr = 0;
 	#include "syntax.tab.h"
 	#include "grammar_tree.h"
 %}
 
-delim	[ \t\n\r]
+delim	[ \t\r]
 WS		{delim}+
 
 /* punctuation */
@@ -86,7 +87,5 @@ ID	{letter_}({letter_}|{digit})*
 {FLOAT}	{ yylval.a=create("FLOAT",0,yylineno);return FLOAT; }
 {INT}	{ yylval.a=create("INT",0,yylineno);return INT; }
 {ID}	{ yylval.a=create("ID",0,yylineno);  return ID; }
-.		{ printf("Error type A at Line %d: Mysterious string \"%s\".\n", yylineno, yytext); }
+.		{ printf("Error type A at Line %d: Mysterious string \"%s\".\n", yylineno, yytext); lexerr++;}
 %%
-void donothing(){
-}

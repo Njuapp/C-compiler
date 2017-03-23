@@ -28,6 +28,7 @@ struct GrammerTree * create(char* name, int num, ...){
 	else{
 		int t = va_arg(valist, int);
 		a->line = t;
+		a->l = a->r = NULL;
 		if( (!strcmp(a->name,"ID")) || (!strcmp(a->name,"TYPE"))){
 			char* t = (char*)malloc(sizeof(char*)*40);
 			strcpy(t,yytext);
@@ -35,11 +36,13 @@ struct GrammerTree * create(char* name, int num, ...){
 		}
 		else if (!strcmp(a->name, "INT"))
 			a->intgr = atoi(yytext);
+		else if (!strcmp(a->name, "FLOAT"))
+			a->flt = atof(yytext);
 	}
 	return a;
 }
 void eval(struct GrammerTree*a, int level){
-	if(!a)return;
+	if(!a||a->line==-1)return;
 	for(int i = 0; i < level; i++)
 		printf("  ");
 	if(a->line!=-1){
@@ -47,18 +50,20 @@ void eval(struct GrammerTree*a, int level){
 		if((!strcmp(a->name,"ID"))||(!strcmp(a->name,"TYPE")))
 			printf(":%s ",a->idtype);
 		else if(!strcmp(a->name,"INT"))
-			printf(":%d",a->intgr);
-		else
-			printf("(%d)",a->line);
+			printf(":%d ",a->intgr);
+		else if(!strcmp(a->name,"FLOAT"))
+			printf(":%.6f ",a->flt);
+		else if(a->l!=NULL)
+			printf("(%d) ",a->line);
+		printf("\n");
 	}
-	printf("\n");
 	eval(a->l, level+1);
 	eval(a->r, level  );
 }
 void yyerror(char*s, ...){
 	va_list ap;
 	va_start(ap,s);
-	fprintf(stderr,"%d:error:",yylineno);
+	fprintf(stderr,"Error type B at Line %d:",yylineno);
 	vfprintf(stderr,s,ap);
 	fprintf(stderr,"\n");
 }
