@@ -6,7 +6,8 @@ extern int yylineno;
 int main(int argc, char** argv) {
 	int i, totchars = 0, totwords = 0,totlines = 0;
 	if (argc < 2) {
-		yylex();
+		yyparse();
+		//yylex();
 		return 0;
 	}
 	for (i = 1; i < argc; i++) {
@@ -17,7 +18,7 @@ int main(int argc, char** argv) {
 		}
 		yyrestart(f);
 		yylineno = 1;
-		yylex();
+		yyparse();
 		fclose(f);
 	}
 	if(argc > 1)

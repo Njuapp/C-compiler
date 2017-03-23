@@ -1,7 +1,15 @@
 %option yylineno
 %{
-	/* NONE */
+	int yycolumn = 1;
+	#define YY_USER_ACTION  \
+		yylloc.first_line = yylloc.last_line = yylineno; \
+		yylloc.first_column = yycolumn; \
+		yylloc.last_column = yycolumn + yyleng - 1;\
+		yycolumn += yyleng;
+	#include <stdlib.h>
+	#include "syntax.tab.h"
 %}
+
 
 delim	[ \t\n\r]
 WS		{delim}+
@@ -30,6 +38,7 @@ comment	([^\*]|(\*)*[^\*/])*
 COMS	"/*"{comment}(\*)*"*/"
 COME	"*/"
 
+
 /* reserved words */
 TYPE	"int"|"float"
 STRUCT	"struct"
@@ -47,37 +56,42 @@ letter_ [_a-zA-Z]
 ID	{letter_}({letter_}|{digit})*
 
 %%
+\n 	{ yycolumn = 1;}
 {WS}	{ /* do nothing */ }
-{SEMI}	{ printf("SEMI\n"); }
-{COMMA}	{ printf("COMMA\n"); }
-{RELOP}	{ printf("RELOP\n"); }
-{ASSIGNOP}	{ printf("ASSIGNOP\n"); }
-{PLUS}	{ printf("PLUS\n"); }
-{MINUS}	{ printf("MINUS\n"); }
-{STAR}	{ printf("STAR\n"); }
-{DIV}	{ printf("DIV\n"); }
-{AND}	{ printf("AND\n"); }
-{OR}	{ printf("OR\n"); }
-{DOT}	{ printf("DOT\n"); }
-{NOT}	{ printf("NOT\n"); }
-{LP}	{ printf("LP\n"); }
-{RP}	{ printf("RP\n"); }
-{LB}	{ printf("LB\n"); }
-{RB}	{ printf("RB\n"); }
-{LC}	{ printf("LC\n"); }
-{RC}	{ printf("RC\n"); }
-{COMM}	{ printf("ANNO\n"); }
-{COMS}	{ printf("ANNS\n"); }
+{SEMI}	{ return SEMI;} 
+{COMMA}	{ return COMMA; }
+{RELOP}	{ return RELOP; }
+{ASSIGNOP}	{ return ASSIGNOP; }
+{PLUS}	{ return PLUS; }
+{MINUS}	{ return MINUS; }
+{STAR}	{ return STAR; }
+{DIV}	{ return DIV; }
+{AND}	{ return AND; }
+{OR}	{ return OR; }
+{DOT}	{ return DOT; }
+{NOT}	{ return NOT; }
+{LP}	{ return LP; }
+{RP}	{ return RP; }
+{LB}	{ return LB; }
+{RB}	{ return RB; }
+{LC}	{ return LC; }
+{RC}	{ return RC; }
+{COMM}	{ return ANNO; }
+{COMS}	{ return ANNS; }
 {COME}	{ printf("Error type A at Line %d: Wrong */.\n",yylineno); }
-{TYPE}	{ printf("TYPE\n"); }
-{STRUCT}	{ printf("STRUCT\n"); }
-{RETURN}	{ printf("RETURN\n"); }
-{IF}	{ printf("IF\n"); }
-{ELSE}	{ printf("ELSE\n"); }
-{WHILE}	{ printf("WHILE\n"); }
-{FLOAT}	{ printf("FLOAT\n"); }
-{INT}	{ printf("INT\n"); }
-{ID}	{ printf("ID\n"); }
+{TYPE}	{ return TYPE; }
+{STRUCT}	{ return STRUCT; }
+{RETURN}	{ return RETURN; }
+{IF}	{ return IF; }
+{ELSE}	{ return ELSE; }
+{WHILE}	{ return WHILE; }
+{FLOAT}	{ 
+	yylval = atof(yytext);
+	return FLOAT; }
+{INT}	{ 
+	yylval = atoi(yytext); 
+	return INT; }
+{ID}	{ return ID; }
 .		{ printf("Error type A at Line %d: Mysterious string \"%s\".\n", yylineno, yytext); }
 %%
 void donothing(){
