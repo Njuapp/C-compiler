@@ -72,7 +72,8 @@ extern int yydebug;
     RB = 282,
     LC = 283,
     RC = 284,
-    LOWER_THAN_ELSE = 285
+    UMINUS = 285,
+    LOWER_THAN_ELSE = 286
   };
 #endif
 
@@ -81,12 +82,12 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 6 "./syntax.y" /* yacc.c:1909  */
+#line 7 "./syntax.y" /* yacc.c:1909  */
 
 	struct GrammerTree* a;
 	double d;
 
-#line 90 "./syntax.tab.h" /* yacc.c:1909  */
+#line 91 "./syntax.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

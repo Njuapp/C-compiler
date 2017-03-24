@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include "grammar_tree.h"
 int i;
+extern int synerr;
 struct GrammerTree * create(char* name, int num, ...){
 	va_list valist;
 	struct GrammerTree * a = (struct GrammerTree*)malloc(sizeof(struct GrammerTree));
@@ -42,10 +43,10 @@ struct GrammerTree * create(char* name, int num, ...){
 	return a;
 }
 void eval(struct GrammerTree*a, int level){
-	if(!a||a->line==-1)return;
-	for(int i = 0; i < level; i++)
-		printf("  ");
+	if(!a)return;
 	if(a->line!=-1){
+		for(int i = 0; i < level; i ++)
+			printf("  ");
 		printf("%s ",a->name);
 		if((!strcmp(a->name,"ID"))||(!strcmp(a->name,"TYPE")))
 			printf(":%s ",a->idtype);
@@ -53,17 +54,19 @@ void eval(struct GrammerTree*a, int level){
 			printf(":%d ",a->intgr);
 		else if(!strcmp(a->name,"FLOAT"))
 			printf(":%.6f ",a->flt);
-		else if(a->l!=NULL)
+		else if(a->l)
 			printf("(%d) ",a->line);
 		printf("\n");
 	}
 	eval(a->l, level+1);
 	eval(a->r, level  );
 }
-void yyerror(char*s, ...){
-	va_list ap;
-	va_start(ap,s);
+void yyerror(char*format, ...){
+	synerr++;
+	va_list args;
+	va_start(args,format);
 	fprintf(stderr,"Error type B at Line %d:",yylineno);
-	vfprintf(stderr,s,ap);
+	vfprintf(stderr,format,args);
+	va_end(args);
 	fprintf(stderr,"\n");
 }

@@ -2,6 +2,7 @@
 #include "lex.yy.c"
 void yyerror(char* msg,...);
 extern int lexerr;
+int synerr = 0;
 %}
 %union{
 	struct GrammerTree* a;
@@ -21,7 +22,7 @@ extern int lexerr;
 %right NOT 
 %left  DOT
 %left  LP RP LB RB 
-
+%right UMINUS
 
 
 %nonassoc LOWER_THAN_ELSE
@@ -30,7 +31,7 @@ extern int lexerr;
 %%
 Program :ExtDefList{
 		$$=create("Program",1,$1);
-		if(!lexerr)
+		if(!lexerr&&!synerr)
 		eval($$,0);
 		}
 	;
@@ -78,7 +79,7 @@ StmtList:Stmt StmtList{$$=create("StmtList",2,$1,$2);}
 	| {$$=create("StmtList",0,-1);}
 	;
 Stmt:Exp SEMI {$$=create("Stmt",2,$1,$2);}
-	|error SEMI {}
+	|error SEMI{}
 	|Compst {$$=create("Stmt",1,$1);}
 	|RETURN Exp SEMI {$$=create("Stmt",3,$1,$2,$3);}
 	|IF LP Exp RP Stmt {$$=create("Stmt",5,$1,$2,$3,$4,$5);}
@@ -90,6 +91,7 @@ DefList:Def DefList{$$=create("DefList",2,$1,$2);}
 	| {$$=create("DefList",0,-1);}
 	;
 Def:Specifier DecList SEMI {$$=create("Def",3,$1,$2,$3);}
+	|error SEMI {}
 	;
 DecList:Dec {$$=create("DecList",1,$1);}
 	|Dec COMMA DecList {$$=create("DecList",3,$1,$2,$3);}
@@ -107,11 +109,12 @@ Exp:Exp ASSIGNOP Exp{$$=create("Exp",3,$1,$2,$3);}
         |Exp STAR Exp{$$=create("Exp",3,$1,$2,$3);}
         |Exp DIV Exp{$$=create("Exp",3,$1,$2,$3);}
         |LP Exp RP{$$=create("Exp",3,$1,$2,$3);}
-        |MINUS Exp {$$=create("Exp",2,$1,$2);}
+        |MINUS Exp %prec UMINUS{$$=create("Exp",2,$1,$2);}
         |NOT Exp {$$=create("Exp",2,$1,$2);}
         |ID LP Args RP {$$=create("Exp",4,$1,$2,$3,$4);}
         |ID LP RP {$$=create("Exp",3,$1,$2,$3);}
         |Exp LB Exp RB {$$=create("Exp",4,$1,$2,$3,$4);}
+	|Exp LB Exp error ASSIGNOP Exp{printf("missing \"]\".\n");}
         |Exp DOT ID {$$=create("Exp",3,$1,$2,$3);}
         |ID {$$=create("Exp",1,$1);}
         |INT {$$=create("Exp",1,$1);}
