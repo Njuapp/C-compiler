@@ -42,6 +42,7 @@ struct GrammerTree * create(char* name, int num, ...){
 	}
 	return a;
 }
+
 void eval(struct GrammerTree*a, int level){
 	if(!a)return;
 	if(a->line!=-1){
@@ -57,10 +58,11 @@ void eval(struct GrammerTree*a, int level){
 		else if(a->l)
 			printf("(%d) ",a->line);
 		printf("\n");
-	}
+ 	}
 	eval(a->l, level+1);
 	eval(a->r, level  );
 }
+
 void yyerror(char*format, ...){
 	synerr++;
 	va_list args;
