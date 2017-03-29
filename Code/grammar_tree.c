@@ -15,13 +15,13 @@ struct GrammerTree * create(char* name, int num, ...){
 	a->name = name;
 	va_start(valist, num);
 	struct GrammerTree * temp = (struct GrammerTree*)malloc(sizeof(struct GrammerTree));
-	if(num>0){
+	if(num > 0){
 		temp = va_arg(valist, struct GrammerTree*);
 		a->l = temp;
 		a->line = temp->line;
-		if(num>=2){
-			for(i=0;i<num-1;i++){
-				temp->r=va_arg(valist,struct GrammerTree*);
+		if(num >= 2){
+			for(i = 0; i < num-1; i++){
+				temp->r = va_arg(valist,struct GrammerTree*);
 				temp = temp->r;
 			}
 		}
@@ -32,7 +32,7 @@ struct GrammerTree * create(char* name, int num, ...){
 		a->l = a->r = NULL;
 		if( (!strcmp(a->name,"ID")) || (!strcmp(a->name,"TYPE"))){
 			char* t = (char*)malloc(sizeof(char*)*40);
-			strcpy(t,yytext);
+			strcpy(t, yytext);
 			a->idtype = t;
 		}
 		else if (!strcmp(a->name, "INT"))
@@ -44,31 +44,22 @@ struct GrammerTree * create(char* name, int num, ...){
 }
 
 void eval(struct GrammerTree*a, int level){
-	if(!a)return;
-	if(a->line!=-1){
+	if(!a) return;
+	if(a->line != -1){
 		for(int i = 0; i < level; i ++)
 			printf("  ");
-		printf("%s ",a->name);
-		if((!strcmp(a->name,"ID"))||(!strcmp(a->name,"TYPE")))
-			printf(":%s ",a->idtype);
-		else if(!strcmp(a->name,"INT"))
-			printf(":%d ",a->intgr);
-		else if(!strcmp(a->name,"FLOAT"))
-			printf(":%.6f ",a->flt);
+		printf("%s ", a->name);
+		if((!strcmp(a->name, "ID")) || (!strcmp(a->name, "TYPE")))
+			printf(":%s ", a->idtype);
+		else if(!strcmp(a->name, "INT"))
+			printf(":%d ", a->intgr);
+		else if(!strcmp(a->name, "FLOAT"))
+			printf(":%.6f ", a->flt);
 		else if(a->l)
-			printf("(%d) ",a->line);
+			printf("(%d) ", a->line);
 		printf("\n");
  	}
 	eval(a->l, level+1);
 	eval(a->r, level  );
 }
 
-void yyerror(char*format, ...){
-	synerr++;
-	va_list args;
-	va_start(args,format);
-	fprintf(stderr,"Error type B at Line %d:",yylineno);
-	vfprintf(stderr,format,args);
-	va_end(args);
-	fprintf(stderr,"\n");
-}

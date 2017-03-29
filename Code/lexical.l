@@ -14,6 +14,7 @@
 
 delim	[ \t\r]
 WS		{delim}+
+LineB		\n
 
 /* punctuation */
 SEMI	";"
@@ -56,7 +57,7 @@ letter_ [_a-zA-Z]
 ID	{letter_}({letter_}|{digit})*
 
 %%
-\n 	{ yycolumn = 1;}
+{LineB} 	{ yycolumn = 1;}
 {WS}	{ /* do nothing */ }
 {SEMI}	{ yylval.a=create("SEMI",0,yylineno); return SEMI;} 
 {COMMA}	{ yylval.a=create("COMMA",0,yylineno);return COMMA; }

@@ -1,19 +1,10 @@
-struct c {int x;};
 int main()
 {
-	int i = 1;
-	i = i +1;
-	if(i>1)
-		i;
-	else
-		if()
-			i;
-	{
-		a;
-	}
-	a[2,0]=3.66;
-	a=a+1
-	i=3;
-	i=/1;	
-
+	/*
+	comment
+	/*
+	nested comment
+	*/
+	*/
+	int i=1;
 }
