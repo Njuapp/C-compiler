@@ -48,9 +48,12 @@ ExtDefList:ExtDef ExtDefList{
 	|{$$=create("ExtDefList",0,-1);}
 	;
 ExtDef:Specifier ExtDecList SEMI    {$$=create("ExtDef",3,$1,$2,$3);}    
+	|Specifier error SEMI {}
 	|Specifier SEMI	{$$=create("ExtDef",2,$1,$2);}
 	|Specifier FunDec Compst	{$$=create("ExtDef",3,$1,$2,$3);}
-	|Specifier error { errstr = "ExtDef missing \";\".";}
+	|Specifier error Compst {}
+	|error FunDec Compst{}
+	|error SEMI {}
 	;
 ExtDecList:VarDec {$$=create("ExtDecList",1,$1);}
 	|VarDec COMMA ExtDecList {$$=create("ExtDecList",3,$1,$2,$3);}
@@ -63,6 +66,7 @@ Specifier:TYPE {$$=create("Specifier",1,$1);}
 StructSpecifier:STRUCT OptTag LC DefList RC {$$=create("StructSpecifier",5,$1,$2,$3,$4,$5);}
 	|STRUCT Tag {$$=create("StructSpecifier",2,$1,$2);}
 	|STRUCT OptTag LC error RC {}
+	|STRUCT OptTag LC error {errstr="StructSpecifier missing \"}\".";}
 	;
 OptTag:ID {$$=create("OptTag",1,$1);}
 	|{$$=create("OptTag",0,-1);}
@@ -89,7 +93,7 @@ ParamDec:Specifier VarDec {$$=create("ParamDec",2,$1,$2);}
 
 /*Statement*/
 Compst:LC DefList StmtList RC {$$=create("Compst",4,$1,$2,$3,$4);}
-/*	|LC DefList StmtList error {errstr="Compst missing \"}\".";}*/
+	|LC DefList error {errstr="Compst missing \"}\".";}
 	;
 StmtList:Stmt StmtList{$$=create("StmtList",2,$1,$2);}
 	| {$$=create("StmtList",0,-1);}
@@ -125,6 +129,7 @@ DecList:Dec {$$=create("DecList",1,$1);}
 Dec:VarDec {$$=create("Dec",1,$1);}
 	|VarDec ASSIGNOP Exp {$$=create("Dec",3,$1,$2,$3);}
 	|VarDec ASSIGNOP error {}
+	|VarDec error {}
 	;
 
 Exp:Exp ASSIGNOP Exp{$$=create("Exp",3,$1,$2,$3);}
