@@ -5,7 +5,7 @@
 #include "grammar_tree.h"
 int i;
 extern int synerr;
-struct GrammerTree * create(char* name, int num, ...){
+struct GrammerTree * create(char* name, int prod, int num, ...){
 	va_list valist;
 	struct GrammerTree * a = (struct GrammerTree*)malloc(sizeof(struct GrammerTree));
 	if(!a){
@@ -13,6 +13,7 @@ struct GrammerTree * create(char* name, int num, ...){
 		exit(0);
 	}
 	a->name = name;
+	a->prod = prod;
 	va_start(valist, num);
 	struct GrammerTree * temp = (struct GrammerTree*)malloc(sizeof(struct GrammerTree));
 	if(num > 0){
@@ -45,6 +46,7 @@ struct GrammerTree * create(char* name, int num, ...){
 
 void eval(struct GrammerTree*a, int level){
 	if(!a) return;
+	printf("%d",a->prod);
 	if(a->line != -1){
 		for(int i = 0; i < level; i ++)
 			printf("  ");

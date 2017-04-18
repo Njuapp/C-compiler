@@ -1,10 +1,6 @@
 int main()
 {
-	/*
-	comment
-	/*
-	nested comment
-	*/
-	*/
 	int i=1;
+	int i;
+	return 0;
 }
