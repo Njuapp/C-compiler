@@ -8,9 +8,12 @@ struct GrammerTree{
 	int line;
 	char* name;
 	int prod;//The production rule we used to generate this node
+	int tag;//STRU(2) 表示结构
 	struct GrammerTree* l;
 	struct GrammerTree* r;
 	struct Type* typeinfo;//在语法树节点中记录的类型信息
+	char* typeName;
+	struct FieldList * stru;
 	union{
 		char* idtype;
 		int intgr;

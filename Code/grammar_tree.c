@@ -46,8 +46,8 @@ struct GrammerTree * create(char* name, int prod, int num, ...){
 
 void eval(struct GrammerTree*a, int level){
 	if(!a) return;
-	printf("%d",a->prod);
 	if(a->line != -1){
+		printf("%2d",a->prod);
 		for(int i = 0; i < level; i ++)
 			printf("  ");
 		printf("%s ", a->name);

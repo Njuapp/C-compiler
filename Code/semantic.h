@@ -3,6 +3,8 @@
 #include "grammar_tree.h"
 #define make_helper(name) void name(struct GrammerTree* node, struct GrammerTree* parent, int location, int inh)
 typedef void (*helper_fun)(struct GrammerTree*, struct GrammerTree*, int,int);
+#define NOSTRU 0
+#define STRU 1
 struct Type{
 	enum{ BASIC, ARRAY, STRUCTURE} kind;
 	union{
@@ -22,15 +24,15 @@ struct Var{
 
 struct FieldList{
 	char* name;
-	struct Type type;
+	struct Type* type;
 	struct FieldList* next;
 };
 struct Param{
-	struct Type type;
+	struct Type* type;
 	struct Param* next;
 };
 struct Func{
-	struct Type rettype;
+	struct Type* rettype;
 	int numOfParams;
 	struct Param* head;
 	struct Func* next;
@@ -38,12 +40,25 @@ struct Func{
 void sdt(struct GrammerTree* Program);
 void SDT(struct GrammerTree* node, struct GrammerTree* parent, int location);
 make_helper(inv);
+make_helper(ExtDef1);
+make_helper(ExtDef2);
+make_helper(ExtDecList1);
+make_helper(ExtDecList2);
 make_helper(Specifier1);
+make_helper(Specifier2);
+make_helper(StructDef);
+make_helper(StructRef);
+make_helper(OptTag1);
+make_helper(OptTag2);
+make_helper(Tag);
 make_helper(VarDec1);
 make_helper(VarDec2);
+make_helper(Compst);
+make_helper(DefList1);
 make_helper(def);
 make_helper(DecList1);
 make_helper(DecList2);
 make_helper(Dec1);
 make_helper(Dec2);
+make_helper(ExpID);
 #endif

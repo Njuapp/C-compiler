@@ -1,6 +1,19 @@
-int main()
-{
-	int i=1;
-	int i;
+struct Position{
+	float x,y;
+	int z;
+	float si;
+};
+struct Position point;
+struct Position piont;
+int main(){
+	struct{
+		int id;
+		int score;
+	}person;
+	struct{
+		int id;
+		int score;
+		struct Position max;
+	}record;
 	return 0;
 }
