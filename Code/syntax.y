@@ -64,6 +64,7 @@ Specifier:TYPE {$$=create("Specifier",9,1,$1);}
 StructSpecifier:STRUCT OptTag LC DefList RC {$$=create("StructSpecifier",11,5,$1,$2,$3,$4,$5);}
 	|STRUCT Tag {$$=create("StructSpecifier",12,2,$1,$2);}
 	|STRUCT OptTag LC error RC {}
+	|STRUCT OptTag LC error {errstr="StructSpecifier missing \"}\".";}
 	;
 OptTag:ID {$$=create("OptTag",13,1,$1);}
 	|{$$=create("OptTag",14,0,-1);}
@@ -126,6 +127,7 @@ DecList:Dec {$$=create("DecList",35,1,$1);}
 Dec:VarDec {$$=create("Dec",37,1,$1);}
 	|VarDec ASSIGNOP Exp {$$=create("Dec",38,3,$1,$2,$3);}
 	|VarDec ASSIGNOP error {}
+	|VarDec error {}
 	;
 
 Exp:Exp ASSIGNOP Exp{$$=create("Exp",39,3,$1,$2,$3);}

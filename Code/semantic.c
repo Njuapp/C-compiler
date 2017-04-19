@@ -24,7 +24,7 @@ helper_fun semantics [64]={
 	inv, inv, inv, inv,
 	//48-63
 	inv, inv, inv, inv,
-	inv, inv, ExpID, inv,
+	inv, ExpDOTID, ExpID, inv,
 	inv, inv, inv, inv,
 	inv, inv, inv, inv,
 };
@@ -457,6 +457,10 @@ make_helper(Compst){
 		default:
 		assert(0);
 	}
+}
+
+make_helper(ExpDOTID){
+	//TODO:检测错误类型13,14,最好支持递归取结构体的域
 }
 
 make_helper(ExpID){

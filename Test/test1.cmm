@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 struct Position{
 	float x,y;
 	int z;
@@ -15,5 +16,24 @@ int main(){
 		int score;
 		struct Position max;
 	}record;
+=======
+int dot[10]; 
+int val = 4;
+
+struct Vector 
+{
+	int x, y; 
+};
+
+int dotMultiply(struct Vector v1: struct Vector v2) 
+{
+	return v1.x*v2.y - v1.y*v2.x; 
+}
+
+int main() 
+{
+	int i=1;
+	int i;
+>>>>>>> d2f0b955160021fc5a7f3319fb62c36a931bc6f4
 	return 0;
 }

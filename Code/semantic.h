@@ -60,5 +60,6 @@ make_helper(DecList1);
 make_helper(DecList2);
 make_helper(Dec1);
 make_helper(Dec2);
+make_helper(ExpDOTID);
 make_helper(ExpID);
 #endif
