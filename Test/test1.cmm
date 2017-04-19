@@ -13,11 +13,7 @@ int dotMultiply(struct Vector v1: struct Vector v2)
 
 int main() 
 {
-	stuct Vector v1, v2;
-	v1.x = 1.2;
-	v1.y = 3.6;
-    v2.x = v1.x * val;
-    v2.y = 6.7;
-
-	return dotMultiply((v1, v2); 
+	int i=1;
+	int i;
+	return 0;
 }

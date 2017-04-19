@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "grammar_tree.h"
 int yyparse();
 void yyrestart(FILE* f);
 extern int yylineno;
@@ -15,6 +16,7 @@ int main(int argc, char** argv) {
 		yyrestart(f);
 		yylineno = 1;
 		yyparse();
+		//eval(root,0);
 		fclose(f);
 	}
 	return 0;
