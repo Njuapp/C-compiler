@@ -16,6 +16,7 @@ struct GrammerTree{
 	struct Param* param;
 	char* typeName;
 	struct FieldList * stru;
+
 	union{
 		char* idtype;
 		int intgr;

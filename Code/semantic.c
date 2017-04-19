@@ -153,6 +153,10 @@ void SDT(struct GrammerTree* node, struct GrammerTree* parent, int location){
 	SDT(node->r, parent, location + 1);
 }
 
+make_helper(inv){
+}
+
+
 make_helper(ExtDef3){
 	switch(location){
 		case 1:
@@ -304,36 +308,6 @@ make_helper(Tag){
 	assert(location==1);
 	if(inh)return;
 	parent->typeName = node->idtype;
-}
-
-make_helper(inv){
-}
-
-make_helper(DefList1){
-	switch(location){
-		case 1:
-		//进入Def节点，也就是单个以分号结尾的定义语句
-		if(inh){
-			node->tag = parent->tag;
-			node->stru = parent->stru;
-		}
-		else{
-			parent->stru = node->stru;
-		}
-		break;
-		case 2:
-		//进入下一个DefList节点
-		if(inh){
-			node->stru = parent->stru;
-			node->tag = parent->tag;
-		}
-		else{
-			parent->stru = node->stru;
-		}
-		break;
-		default:
-		assert(0);
-	}
 }
 
 make_helper(def){
@@ -511,7 +485,7 @@ make_helper(FunDec1){
 			if(!inh)return;
 			struct Func* func = findFunc(node->idtype);
 			if(func)
-				printf("Error type 3 at Line %d: Redefined function \"%s\".\n",node->line,node->idtype);
+				printf("Error type 4 at Line %d: Redefined function \"%s\".\n",node->line,node->idtype);
 			else{
 				addFunc(node->idtype, parent->typeinfo);
 				parent->funcname = node->idtype;
@@ -539,7 +513,7 @@ make_helper(FunDec1){
 			}
 			break;
 		case 4:
-			break;
+	break;
 		default:
 			assert(0);
 	}
@@ -550,13 +524,13 @@ make_helper(FunDec2){
 		if(!inh)return;
 		struct Func* func = findFunc(node->idtype);
 		if(func)
-			printf("Error type 3 at Line %d: Redefined function \"%s\".\n",node->line,node->idtype);
+			printf("Error type 4 at Line %d: Redefined function \"%s\".\n",node->line,node->idtype);
 		else
 			addFunc(node->idtype, parent->typeinfo);
 	}
 }
 
-void addParam(struct GrammerTree* node, struct GrammerTree* parent, struct Param* param){
+void addParam(struct GrammerTree* node, struct Param* param){
 	struct Param* root = node->param;
 	if(root)
 	{
@@ -570,13 +544,47 @@ void addParam(struct GrammerTree* node, struct GrammerTree* parent, struct Param
 	node->param = root;
 }
 
+make_helper(DefList1){
+	switch(location){
+		case 1:
+		//进入Def节点，也就是单个以分号结尾的定义语句
+		if(inh){
+			node->tag = parent->tag;
+			node->stru = parent->stru;
+		}
+		else{
+			parent->stru = node->stru;
+		}
+		break;
+		case 2:
+		//进入下一个DefList节点
+		if(inh){
+			node->stru = parent->stru;
+			node->tag = parent->tag;
+		}
+		else{
+			parent->stru = node->stru;
+		}
+		break;
+		default:
+		assert(0);
+	}
+}
+
+
 make_helper(VarList1){
 	switch(location){
 		case 1:
+			if(!inh){
+				addParam(parent, node->param);
+			}
 			break;
 		case 2:
 			break;
 		case 3:
+			if(!inh){
+				addParam(parent, node->param);
+			}
 			break;
 		default:
 			assert(0);
@@ -584,9 +592,9 @@ make_helper(VarList1){
 }
 
 make_helper(VarList2){
+	assert(location == 1);
 	if(!inh){
-		assert(location == 1);
-
+		addParam(parent, node->param);
 	}
 }
 
@@ -619,5 +627,30 @@ make_helper(ExpID){
 		printf("Error type 1 at Line %d: Undefined variable \"%s\".\n",node->line,node->idtype);
 	else{
 		parent->typeinfo = var->type;
+	}
+}
+
+void print_table(){
+	for(int i=0;i<0x3fff;i++){
+		if(typeTable[i])
+			printf("%d %s\n", typeTable[i]->kind, typeTable[i]->typeName);
+	}
+	printf("\n");
+	/*
+	for(int i=0;i<0x3fff;i++){
+		if(varTable[i])
+			printf("%d %s\n", varTable[i]->type, varTable[i]->name);
+	}*/
+	printf("\n");
+	for(int i=0;i<0x3fff;i++){
+		if(funcTable[i]){
+			printf("%d %s %d", funcTable[i]->rettype->kind, funcTable[i]->name, funcTable[i]->numOfParams);
+			struct Param* p = funcTable[i]->head;
+			while(p){
+				printf(" %s", p->type->typeName);
+				p=p->next;
+			}
+			printf("\n");
+		}
 	}
 }

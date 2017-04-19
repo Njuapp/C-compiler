@@ -32,10 +32,7 @@ struct Param{
 	struct Param* next;
 };
 struct Func{
-<<<<<<< HEAD
 	char *name;
-=======
->>>>>>> 56715e35222508735e76a0ec608710a7940a049c
 	struct Type* rettype;
 	int numOfParams;
 	struct Param* head;
@@ -64,6 +61,7 @@ make_helper(VarList1);
 make_helper(VarList2);
 make_helper(ParamDec);
 make_helper(Compst);
+make_helper(DefList1);
 make_helper(def);
 make_helper(DecList1);
 make_helper(DecList2);
