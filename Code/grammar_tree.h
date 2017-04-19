@@ -11,6 +11,8 @@ struct GrammerTree{
 	struct GrammerTree* l;
 	struct GrammerTree* r;
 	struct Type* typeinfo;//在语法树节点中记录的类型信息
+	char* funcname;
+	struct Param* param;
 	union{
 		char* idtype;
 		int intgr;

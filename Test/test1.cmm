@@ -1,19 +1,18 @@
+/*
 int dot[10]; 
-int val = 4;
+int val;
 
 struct Vector 
 {
 	int x, y; 
 };
-
-int dotMultiply(struct Vector v1: struct Vector v2) 
-{
-	return v1.x*v2.y - v1.y*v2.x; 
-}
-
+*/
 int main() 
 {
 	int i=1;
 	int i;
 	return 0;
+}
+
+int main(){
 }

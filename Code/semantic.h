@@ -26,11 +26,12 @@ struct FieldList{
 	struct FieldList* next;
 };
 struct Param{
-	struct Type type;
+	struct Type* type;
 	struct Param* next;
 };
 struct Func{
-	struct Type rettype;
+	char *name;
+	struct Type* rettype;
 	int numOfParams;
 	struct Param* head;
 	struct Func* next;
@@ -38,9 +39,15 @@ struct Func{
 void sdt(struct GrammerTree* Program);
 void SDT(struct GrammerTree* node, struct GrammerTree* parent, int location);
 make_helper(inv);
+make_helper(ExtDef3);
 make_helper(Specifier1);
 make_helper(VarDec1);
 make_helper(VarDec2);
+make_helper(FunDec1);
+make_helper(FunDec2);
+make_helper(VarList1);
+make_helper(VarList2);
+make_helper(ParamDec);
 make_helper(def);
 make_helper(DecList1);
 make_helper(DecList2);
