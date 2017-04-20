@@ -16,16 +16,16 @@ helper_fun semantics [64]={
 	//16-31
 	VarDec1, VarDec2, FunDec1, FunDec2,
 	VarList1, VarList2, ParamDec, Compst,
-	inv, inv, inv, inv,
-	inv, inv, inv, inv,
+	StmtList1, inv, inv, Stmt2,
+	Stmt3, inv, inv, inv,
 	//32-47
 	DefList1, inv, def, DecList1,
 	DecList2, Dec1, Dec2, inv,
 	inv, inv, inv, inv,
 	inv, inv, inv, inv,
 	//48-63
-	inv, inv, inv, inv,
-	inv, ExpDOTID, ExpID, inv,
+	inv, inv, ExpFunc1, ExpFunc2,
+	ExpArray, ExpDOTID, ExpID, inv,
 	inv, inv, inv, inv,
 	inv, inv, inv, inv,
 };
@@ -166,8 +166,12 @@ make_helper(ExtDef3){
 		case 2:
 		if(inh)
 			node->typeinfo = parent->typeinfo;
+		else
+			parent->funcname = node->funcname;
 		break;
 		case 3:
+		if(inh)
+			node->funcname = parent->funcname;
 		break;
 		default:
 		assert(0);
@@ -199,6 +203,7 @@ make_helper(ExtDecList1){
 	if(inh){
 		node->tag = NOSTRU;
 		node->typeinfo = parent->typeinfo;
+		node->isTop = 1;
 	}
 }
 
@@ -208,6 +213,7 @@ make_helper(ExtDecList2){
 		if(inh){
 			node->tag = NOSTRU;
 			node->typeinfo = parent->typeinfo;
+			node->isTop = 1;
 		}
 		break;
 
@@ -383,6 +389,7 @@ make_helper(Dec1){
 		node->stru = parent->stru;
 		node->tag = parent->tag;
 		node->typeinfo = parent->typeinfo;
+		node->isTop = 1;
 	}
 	else
 		parent->stru = node->stru;
@@ -394,6 +401,7 @@ make_helper(Dec2){
 		if(inh){
 			node->tag = parent->tag;
 			node->typeinfo = parent->typeinfo;
+			node->isTop = 1;
 		}
 		break;
 		case 2:
@@ -444,13 +452,65 @@ make_helper(VarDec1){
 		struct Var * var = findVar(node->idtype);
 		if(var)
 			printf("Error type 3 at Line %d: Redefined variable \"%s\".\n",node->line,node->idtype);
-		else
+		else{
 			addVar(node->idtype, parent->typeinfo);
+			parent->arrayname = node->idtype;
+		}
 	}
 }
 
 make_helper(VarDec2){
-	
+	switch(location){
+		case 1:
+			if(inh){
+				node->typeinfo = parent->typeinfo;
+			}
+			else{
+				if(node->arrayname){
+					struct Type* type = (struct Type*)malloc(sizeof(struct Type));
+					type->kind = ARRAY;
+					struct Var* var = findVar(node->arrayname);
+					type->array.elem = var->type;
+					var->type = type;
+					parent->arrayname = node->arrayname;
+					printf("array %s\n",node->arrayname);
+				}
+			}
+			break;
+		case 2:
+			break;
+		case 3:
+			if(!inh){
+				if(parent->arrayname){
+					printf("array3 %s\n",parent->arrayname);
+					struct Var* var = findVar(parent->arrayname);
+					struct Type* type = var->type;
+					assert(type->kind == ARRAY);
+					assert(!strcmp(node->name, "INT"));
+					type->array.size = node->intgr;
+					struct Type* t = type;
+					char* name = (char*)malloc(sizeof(char)*NAME_MAX_LENGTH);
+					name[0] = '\0';
+					while(t->kind == ARRAY){
+						char *number = (char*)malloc(sizeof(char)*NAME_MAX_LENGTH);
+						sprintf(number, "[%d]", t->array.size);
+						strcat(name, number);
+						free(number);
+						t = t->array.elem;
+					}
+					char *temp = (char*)malloc(sizeof(char)*NAME_MAX_LENGTH);
+					strcpy(temp, t->typeName);
+					strcat(temp, name);
+					free(name);
+					type->typeName = temp;
+					printf("%s\n",type->typeName);
+					var->type = type;
+				}
+			}
+			break;
+		case 4:
+			break;
+	}
 }
 
 make_helper(Compst){
@@ -467,11 +527,54 @@ make_helper(Compst){
 		}
 		break;
 		case 3:
+		if(inh){
+			node->funcname = parent->funcname;
+		}
 		break;
 		case 4:
 		break;
 		default:
 		assert(0);
+	}
+}
+
+make_helper(StmtList1){
+	switch(location){
+		case 1:
+			if(inh){
+				node->funcname = parent->funcname;
+			}
+			break;
+		case 2:
+			if(inh){
+				node->funcname = parent->funcname;
+			}
+			break;
+	}
+}
+
+make_helper(Stmt2){
+	assert(location == 1);
+	if(inh){
+		node->funcname = parent->funcname;
+	}
+}
+
+make_helper(Stmt3){
+	switch(location){
+		case 1:
+			break;
+		case 2:
+			if(!inh){
+				assert(parent->funcname);
+				struct Func* func = findFunc(parent->funcname);
+				//TODO:match function
+				if(node->typeinfo != func->rettype)
+					printf("Error type 8 at Line %d: Return type dismatch.\n",node->line);
+				}
+			break;
+		case 3:
+			break;
 	}
 }
 
@@ -527,6 +630,7 @@ make_helper(FunDec2){
 			printf("Error type 4 at Line %d: Redefined function \"%s\".\n",node->line,node->idtype);
 		else
 			addFunc(node->idtype, parent->typeinfo);
+		parent->funcname = node->idtype;
 	}
 }
 
@@ -605,8 +709,10 @@ make_helper(ParamDec){
 				parent->typeinfo = node->typeinfo;
 			break;
 		case 2:
-			if(inh)
+			if(inh){
 				node->typeinfo = parent->typeinfo;
+				node->isTop = 1;
+			}
 			else{
 				struct Param* param = (struct Param*)malloc(sizeof(struct Param));
 				param->type = node->typeinfo;
@@ -616,6 +722,57 @@ make_helper(ParamDec){
 			break;
 		default:
 			assert(0);
+	}
+}
+
+make_helper(ExpFunc1){
+	switch(location){
+		case 1:
+			if(!inh){
+				char* name = node->idtype;
+				if(findVar(name))
+					printf("Error type 11 at Line %d: Function operator on normal var \"%s\".\n",node->line,node->idtype);
+				struct Func* func = findFunc(name);
+				if(func)
+					printf("Error type 2 at Line %d: Undefined function \"%s\".\n",node->line,node->idtype);
+				else{
+					parent->typeinfo = func->rettype;
+				}
+			}
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
+	}
+}
+
+make_helper(ExpFunc2){
+	switch(location){
+	}
+}
+
+make_helper(ExpArray){
+	switch(location){
+		case 1:
+			if(!inh){
+				if(node->typeinfo.kind != ARRAY)
+					printf("Error type 10 at Line %d: Array operator at wrong var \"%s\".\n",node->line,node->idtype);
+			}
+			break;
+		case 2:
+			break;
+		case 3:
+			if(!inh){
+				//TODO:match
+				if(node->typeinfo != "INT")
+					printf("Error type 12 at Line %d: Array operator at wrong type index.\n",node->line);
+			}
+			break;
+		case 4:
+			break;
 	}
 }
 
@@ -636,11 +793,19 @@ void print_table(){
 			printf("%d %s\n", typeTable[i]->kind, typeTable[i]->typeName);
 	}
 	printf("\n");
-	/*
+	
 	for(int i=0;i<0x3fff;i++){
-		if(varTable[i])
-			printf("%d %s\n", varTable[i]->type, varTable[i]->name);
-	}*/
+		if(varTable[i] && varTable[i]->type && varTable[i]->name){
+			if(varTable[i]->type->kind == ARRAY){
+				struct Type* type = varTable[i]->type;
+				while(type->array.size){
+					printf("%d ",type->array.size);
+					type = type->array.elem;
+				}
+			}
+			printf("%d %s %s\n", varTable[i]->type->kind, varTable[i]->name, varTable[i]->type->typeName);
+		}
+	}
 	printf("\n");
 	for(int i=0;i<0x3fff;i++){
 		if(funcTable[i]){
