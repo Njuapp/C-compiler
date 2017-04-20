@@ -5,6 +5,7 @@
 #include "grammar_tree.h"
 int i;
 extern int synerr;
+#define NAME_MAX_LENGTH 257
 struct GrammerTree * create(char* name, int prod, int num, ...){
 	va_list valist;
 	struct GrammerTree * a = (struct GrammerTree*)malloc(sizeof(struct GrammerTree));
@@ -34,7 +35,7 @@ struct GrammerTree * create(char* name, int prod, int num, ...){
 		a->line = t;
 		a->l = a->r = NULL;
 		if( (!strcmp(a->name,"ID")) || (!strcmp(a->name,"TYPE"))){
-			char* t = (char*)malloc(sizeof(char*)*40);
+			char* t = (char*)malloc(sizeof(char*)*NAME_MAX_LENGTH);
 			strcpy(t, yytext);
 			a->idtype = t;
 		}

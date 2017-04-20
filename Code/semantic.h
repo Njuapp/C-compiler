@@ -70,4 +70,6 @@ make_helper(Dec2);
 make_helper(ExpASSIGNExp);
 make_helper(ExpDOTID);
 make_helper(ExpID);
+make_helper(ExpINT);
+make_helper(ExpFLOAT);
 #endif

@@ -25,8 +25,8 @@ helper_fun semantics [64]={
 	inv, inv, inv, inv,
 	//48-63
 	inv, inv, inv, inv,
-	inv, ExpDOTID, ExpID, inv,
-	inv, inv, inv, inv,
+	inv, ExpDOTID, ExpID, ExpINT,
+	ExpFLOAT, inv, inv, inv,
 	inv, inv, inv, inv,
 };
 
@@ -119,7 +119,7 @@ void addBasicType(char* typeName){
 		nwnode->basic = 2;
 	else
 		assert(0);
-	nwnode->typeName =(char*)malloc(sizeof(char)*40);
+	nwnode->typeName =(char*)malloc(sizeof(char)*NAME_MAX_LENGTH);
 	strcpy(nwnode->typeName, typeName);
 	nwnode->next = typeTable[h];
 	typeTable[h] = nwnode;
@@ -166,7 +166,6 @@ void sdt(struct GrammerTree* Program){
 void SDT(struct GrammerTree* node, struct GrammerTree* parent, int location){
 	if(!node)return;
 	int prod = parent->prod;
-	printf("%s %d %d\n", node->name, prod, location);
 	semantics[prod](node, parent, location ,1);// node inherits something from left nodes or parent
 	SDT(node->l, node, 1);
 	semantics[prod](node, parent, location ,0);// parent synthesizes something from child node
@@ -426,6 +425,7 @@ make_helper(Dec2){
 	switch(location){
 		case 1:
 		if(inh){
+			node->stru = parent->stru;
 			node->tag = parent->tag;
 			node->typeinfo = parent->typeinfo;
 		}
@@ -725,6 +725,18 @@ make_helper(ExpID){
 	else{
 		parent->typeinfo = var->type;
 	}
+}
+
+make_helper(ExpINT){
+	assert(location == 1);
+	if(!inh)
+		parent->typeinfo = findType("int");
+}
+
+make_helper(ExpFLOAT){
+	assert(location==1);
+	if(!inh)
+		parent->typeinfo = findType("float");
 }
 
 void print_table(){
