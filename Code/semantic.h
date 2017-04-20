@@ -32,6 +32,7 @@ struct Param{
 	struct Param* next;
 };
 struct Func{
+	char *name;
 	struct Type* rettype;
 	int numOfParams;
 	struct Param* head;
@@ -42,6 +43,7 @@ void SDT(struct GrammerTree* node, struct GrammerTree* parent, int location);
 make_helper(inv);
 make_helper(ExtDef1);
 make_helper(ExtDef2);
+make_helper(ExtDef3);
 make_helper(ExtDecList1);
 make_helper(ExtDecList2);
 make_helper(Specifier1);
@@ -53,6 +55,11 @@ make_helper(OptTag2);
 make_helper(Tag);
 make_helper(VarDec1);
 make_helper(VarDec2);
+make_helper(FunDec1);
+make_helper(FunDec2);
+make_helper(VarList1);
+make_helper(VarList2);
+make_helper(ParamDec);
 make_helper(Compst);
 make_helper(DefList1);
 make_helper(def);

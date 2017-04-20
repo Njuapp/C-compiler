@@ -41,6 +41,7 @@ int yydebug = 1;
 Program :ExtDefList{
 		$$=create("Program",1,1,$1);
 		sdt($$);
+		print_table();
 		}
 	;
 ExtDefList:ExtDef ExtDefList{

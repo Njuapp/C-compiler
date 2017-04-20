@@ -14,6 +14,8 @@ struct GrammerTree * create(char* name, int prod, int num, ...){
 	}
 	a->name = name;
 	a->prod = prod;
+	a->funcname = NULL;
+	a->param = NULL;
 	va_start(valist, num);
 	struct GrammerTree * temp = (struct GrammerTree*)malloc(sizeof(struct GrammerTree));
 	if(num > 0){
