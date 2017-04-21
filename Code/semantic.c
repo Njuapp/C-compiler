@@ -20,7 +20,7 @@ helper_fun semantics [64]={
 	Stmt3, inv, inv, inv,
 	//32-47
 	DefList1, inv, def, DecList1,
-	DecList2, Dec1, Dec2, inv,
+	DecList2, Dec1, Dec2, ExpASSIGNExp,
 	inv, inv, inv, inv,
 	inv, inv, inv, inv,
 	//48-63
@@ -38,6 +38,31 @@ unsigned int hash_pjw(char* name){
 		if( i = val & ~0x3fff) val = (val ^ (i >> 12) ) & 0x3fff;
 	}
 	return val;
+}
+
+//TODO:判断两个数组是否等价
+int arrayEqual(struct Type* left, struct Type* right){
+	assert(left->kind == ARRAY && right->kind == ARRAY);
+	return 1;
+}
+
+int structEqual(struct Type* left, struct Type* right){
+	assert(left->kind == STRUCTURE&& right->kind == STRUCTURE);
+	struct FieldList* lp = left->structure;
+	struct FieldList* rp = right->structure;
+	for(; lp && rp; lp = lp->next, rp = rp ->next){
+		if(lp->type->kind != rp->type->kind)
+			return 0;
+		if(lp->type->kind == STRUCTURE&& !structEqual(lp->type, rp->type))
+			return 0;
+		else if(lp->type->kind == BASIC && lp->type->basic != rp->type->basic)
+			return 0;
+		else if(lp->type->kind == ARRAY && !arrayEqual(lp->type, rp->type))
+			return 0;
+	}
+	if(lp || rp)
+		return 0;
+	return 1;
 }
 
 void addVar(char* varname, struct Type* typeinfo){
@@ -87,7 +112,7 @@ void addFunc(char* funcname, struct Type* typeinfo){
 void addBasicType(char* typeName){
 	unsigned int h = hash_pjw(typeName);
 	struct Type* nwnode = (struct Type*)malloc(sizeof(struct Type));
-	nwnode->kind = 0;
+	nwnode->kind = BASIC;
 	if(!strcmp(typeName,"int"))
 		nwnode->basic = 1;
 	else if(!strcmp(typeName, "float"))
@@ -101,24 +126,18 @@ void addBasicType(char* typeName){
 }
 
 void addStruType(struct FieldList* stru, char* typeName){
-	static int dummy = 0;
-	if(!typeName){
-		//有的类是没有名字的，比如匿名结构体
-		//还有数组类型，这个时候就把一个“数字+(array/struct)”作为虚设的typeName
-		//因为typeName作为ID，肯定不是以数字开头的，这样就可以与已有类型的区分开
-		typeName = (char*)malloc(sizeof(char)*40);
-		sprintf(typeName,"%dstruct",dummy);
-		dummy ++;
-	}
+	assert(typeName);
 	unsigned int h = hash_pjw(typeName);
 	struct Type* nwnode = (struct Type*)malloc(sizeof(struct Type));
 	nwnode->kind = 2;
 	nwnode->structure = stru;
 	nwnode->typeName = typeName;
 	struct FieldList* t = stru;
+	printf("----------\n");
 	printf("Structure %s contains:\n",typeName);
 	for( ; t; t = t->next)
 		printf("field name:%s type:%s\n",t->name, t->type->typeName);
+	printf("----------\n");
 	nwnode->next = typeTable[h];
 	typeTable[h] = nwnode;
 }
@@ -140,6 +159,7 @@ void sdt(struct GrammerTree* Program){
 	//把内置的基本类型int和float放入类型表里面
 	addBasicType("int");
 	addBasicType("float");
+	addStruType(0,"INCOMPLETE STRUCT");
 	SDT(Program->l, Program, 1);
 }
 
@@ -269,10 +289,20 @@ make_helper(StructDef){
 			struct Type* struType = findType(parent->typeName);
 			if(struType)
 				printf("Error Type 16 at Line %d: Duplicated name \"%s\".\n", parent->line, parent->typeName);
-			else
-				addStruType(node->stru,parent->typeName);
-			parent->typeinfo = findType(parent->typeName);
-			
+			else{
+				if(!parent->typeName){
+					struType = (struct Type*)malloc(sizeof(struct Type));
+					struType->kind = STRUCTURE;
+					struType->structure = node->stru;
+					struType->next = 0;
+					struType->typeName=0;
+					parent->typeinfo = struType;
+				}
+				else{
+					addStruType(node->stru,parent->typeName);
+					parent->typeinfo = findType(parent->typeName);
+				}
+			}
 		}
 		break;
 		case 5:
@@ -289,8 +319,11 @@ make_helper(StructRef){
 		case 2:
 		if(!inh){
 			struct Type* struType = findType(node->typeName);
-			if(!struType)
+			if(!struType){
 				printf("Error type 17 at Line %d: Undefined structure \"%s\".\n",node->line, node->typeName);
+				//如果使用了没有定义的结构类型，把这个结构类型设置为预订义好的空的结构类型
+				parent->typeinfo = findType("INCOMPLETE STRUCT");
+			}
 			else{
 				parent->typeinfo = struType;
 			}
@@ -313,6 +346,7 @@ make_helper(OptTag2){
 make_helper(Tag){
 	assert(location==1);
 	if(inh)return;
+//	printf("Tag %s.\n",node->idtype);	
 	parent->typeName = node->idtype;
 }
 
@@ -453,6 +487,8 @@ make_helper(VarDec1){
 		if(var)
 			printf("Error type 3 at Line %d: Redefined variable \"%s\".\n",node->line,node->idtype);
 		else{
+			if(parent->typeinfo->kind == STRUCTURE)
+				printf("struct-type variable %s.\n",node->idtype);
 			addVar(node->idtype, parent->typeinfo);
 			parent->arrayname = node->idtype;
 		}
@@ -578,8 +614,68 @@ make_helper(Stmt3){
 	}
 }
 
+make_helper(ExpASSIGNExp){
+	switch(location){
+		case 1:
+		if(!inh)
+			parent->typeinfo = node->typeinfo;
+		break;
+		case 2:
+		break;
+		case 3:
+		if(inh)return;
+		if(parent->typeinfo->kind != node->typeinfo->kind)
+			printf("Error type 5 at Line %d: Type mismatched for assignment.\n",node->line);
+		else{
+			if(parent->typeinfo->kind == BASIC){
+				if(parent->typeinfo->basic != node->typeinfo->basic)
+					printf("Error type 5 at Line %d: Type mismatched for assignment.\n",node->line);
+			}
+			else if(parent->typeinfo->kind == STRUCTURE){
+				if(! structEqual(parent->typeinfo, node->typeinfo))
+					printf("Error type 5 at Line %d: Type mismatched for assignment.\n",node->line);
+			}
+			else if(parent->typeinfo->kind == ARRAY){
+				if(! arrayEqual(parent->typeinfo, node->typeinfo))
+					printf("Error type 6 at Line %d: The left-hand side of an assignment",node->line); 
+			}
+			else
+				assert(0);
+		}
+		break;
+		default:
+		assert(0);
+	}
+}
+
 make_helper(ExpDOTID){
-	//TODO:检测错误类型13,14,最好支持递归取结构体的域
+	//TODO:检测错误类型14,最好支持递归取结构体的域
+	switch(location){
+		case 1:
+		if(!inh){
+			parent->typeinfo = node->typeinfo;
+		}
+		break;
+		case 2:
+		break;
+		case 3:
+		if(!inh){
+			struct Type* typeinfo = parent->typeinfo;
+			if(typeinfo->kind != STRUCTURE)
+				printf("Error type 13 at Line %d: Illegal use of \".\".\n",node->line);
+			else{
+				struct FieldList* field = typeinfo->structure;
+				for( ; field; field = field->next)
+					if(!strcmp(node->idtype, field->name))
+						break;
+				if(!field)
+					printf("Error type 14 at Line %d: Non-existent field \"%s\".\n",node->line,node->idtype);
+				else
+					parent->typeinfo = field->type;
+			}
+		}
+		break;
+	}
 }
 
 make_helper(FunDec1){
