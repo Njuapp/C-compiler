@@ -11,11 +11,13 @@ struct GrammerTree{
 	int tag;//STRU(2) 表示结构
 	struct GrammerTree* l;
 	struct GrammerTree* r;
+
 	struct Type* typeinfo;//在语法树节点中记录的类型信息
 	char* funcname; // function name
 	char* arrayname;
-	int isTop; // is top VarDec tag
+	int isLeft; // left value exp
 	struct Param* param; // inher params
+
 	char* typeName;
 	struct FieldList * stru;
 
