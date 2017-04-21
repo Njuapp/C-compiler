@@ -1,0 +1,31 @@
+struct Scores{
+	int read,write;
+	float listen, speak;
+};
+struct Grade{
+	int w;
+	int r;
+	float listen;
+	float speak;
+};
+struct People{
+	int number = 1;
+	struct {
+		int read;
+		float write;
+	}mid,final;
+};
+struct Record{
+	int id;
+	struct Scores score;
+};
+int main(){
+	struct Record mike;
+	struct People vito;
+	int i;
+	float j =1;
+	mike.score.read = i;
+	vito.final.read = 1.2;
+	mike = vito;
+	return 0;
+}
