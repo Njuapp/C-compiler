@@ -17,7 +17,7 @@ int main(){
 	}record;
 	return 0;
 }
-int main() 
+int maa(int x, struct Position y, float z) 
 {
 	int i=1;
 	int i;
@@ -25,4 +25,8 @@ int main()
 }
 
 int main(){
+	int aa[10][11][3];
+	float ab[5];
+	struct Position ac[10];
+	return 3.0;
 }
