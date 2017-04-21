@@ -16,17 +16,17 @@ helper_fun semantics [64]={
 	//16-31
 	VarDec1, VarDec2, FunDec1, FunDec2,
 	VarList1, VarList2, ParamDec, Compst,
-	inv, inv, inv, inv,
-	inv, inv, inv, inv,
+	StmtList1, inv, inv, Stmt2,
+	Stmt3, Stmt4, Stmt5, Stmt6,
 	//32-47
-	DefList1, inv, def, DecList1,
+	DefList1, inv, Def, DecList1,
 	DecList2, Dec1, Dec2, ExpASSIGNExp,
-	inv, inv, inv, inv,
-	inv, inv, inv, inv,
+	ExpBOOL, ExpBOOL, ExpBOOL, ExpPMSD,
+	ExpPMSD, ExpPMSD, ExpPMSD, ExpLP,
 	//48-63
-	inv, inv, inv, inv,
-	inv, ExpDOTID, ExpID, ExpINT,
-	ExpFLOAT, inv, inv, inv,
+	ExpUMINUS, ExpNOT, ExpFunc1, ExpFunc2,
+	ExpArray, ExpDOTID, ExpID, ExpINT,
+	ExpFLOAT, Args1, Args2, inv,
 	inv, inv, inv, inv,
 };
 
@@ -39,11 +39,27 @@ unsigned int hash_pjw(char* name){
 	}
 	return val;
 }
+int arrayEqual(struct Type* left, struct Type* right);
+int structEqual(struct Type* left, struct Type* right);
 
-//TODO:判断两个数组是否等价
+int typeEqual(struct Type* left, struct Type* right){
+	if(!left || !right)
+		return 0;
+	if(left->kind != right->kind)
+		return 0;
+	if(left->kind == BASIC)
+		return left->basic == right->basic;
+	if(left->kind == ARRAY)
+		return arrayEqual(left, right);
+	if(left->kind == STRUCTURE)
+		return structEqual(left, right);
+}
+
 int arrayEqual(struct Type* left, struct Type* right){
 	assert(left->kind == ARRAY && right->kind == ARRAY);
-	return 1;
+	for(; left->kind == ARRAY && right->kind == ARRAY; left = left->array.elem, right = right->array.elem)
+		;
+	return typeEqual(left, right);
 }
 
 int structEqual(struct Type* left, struct Type* right){
@@ -51,13 +67,7 @@ int structEqual(struct Type* left, struct Type* right){
 	struct FieldList* lp = left->structure;
 	struct FieldList* rp = right->structure;
 	for(; lp && rp; lp = lp->next, rp = rp ->next){
-		if(lp->type->kind != rp->type->kind)
-			return 0;
-		if(lp->type->kind == STRUCTURE&& !structEqual(lp->type, rp->type))
-			return 0;
-		else if(lp->type->kind == BASIC && lp->type->basic != rp->type->basic)
-			return 0;
-		else if(lp->type->kind == ARRAY && !arrayEqual(lp->type, rp->type))
+		if(!typeEqual(lp->type, rp->type))
 			return 0;
 	}
 	if(lp || rp)
@@ -175,24 +185,6 @@ void SDT(struct GrammerTree* node, struct GrammerTree* parent, int location){
 make_helper(inv){
 }
 
-
-make_helper(ExtDef3){
-	switch(location){
-		case 1:
-		if(!inh)
-			parent->typeinfo = node->typeinfo;
-		break;
-		case 2:
-		if(inh)
-			node->typeinfo = parent->typeinfo;
-		break;
-		case 3:
-		break;
-		default:
-		assert(0);
-	}
-}
-
 make_helper(ExtDef1){
 	switch(location){
 		case 1:
@@ -212,6 +204,28 @@ make_helper(ExtDef1){
 
 make_helper(ExtDef2){
 }
+
+make_helper(ExtDef3){
+	switch(location){
+		case 1:
+		if(!inh)
+			parent->typeinfo = node->typeinfo;
+		break;
+		case 2:
+		if(inh)
+			node->typeinfo = parent->typeinfo;
+		else
+			parent->funcname = node->funcname;
+		break;
+		case 3:
+		if(inh)
+			node->funcname = parent->funcname;
+		break;
+		default:
+		assert(0);
+	}
+}
+
 
 make_helper(ExtDecList1){
 	assert(location == 1);
@@ -343,7 +357,7 @@ make_helper(Tag){
 	parent->typeName = node->idtype;
 }
 
-make_helper(def){
+make_helper(Def){
 	switch(location){
 		case 1:
 		//从Specifier获取一个综合属性，也就是类型信息typeinfo
@@ -433,7 +447,9 @@ make_helper(Dec2){
 		case 2:
 		break;
 		case 3:
-		//TODO:查看复制语句两边是否类型相同
+		if(inh) return;
+		if(!typeEqual(parent->typeinfo, node->typeinfo))
+			printf("Error type 5 at Line %d: Type mismatched for assignment.\n",node->line);
 		break;
 		default:
 		assert(0);
@@ -452,7 +468,7 @@ make_helper(VarDec1){
 		struct FieldList* temp;
 		for(temp = parent->stru ; temp; temp = temp->next){
 			if(!strcmp(temp->name,node->idtype)){
-				printf("Error type 15 at Line %d:Redefined field \"%s\".\n",node->line,node->idtype);
+				printf("Error type 15 at Line %d: Redefined field \"%s\".\n",node->line,node->idtype);
 				return;
 			}
 		}
@@ -482,12 +498,61 @@ make_helper(VarDec1){
 			if(parent->typeinfo->kind == STRUCTURE)
 				printf("struct-type variable %s.\n",node->idtype);
 			addVar(node->idtype, parent->typeinfo);
+			parent->arrayname = node->idtype;
 		}
 	}
 }
 
 make_helper(VarDec2){
-	
+	switch(location){
+		case 1:
+			if(inh){
+				node->typeinfo = parent->typeinfo;
+			}
+			else{
+				if(node->arrayname){
+					struct Type* type = (struct Type*)malloc(sizeof(struct Type));
+					type->kind = ARRAY;
+					struct Var* var = findVar(node->arrayname);
+					type->array.elem = var->type;
+					var->type = type;
+					parent->arrayname = node->arrayname;
+					printf("array %s\n",node->arrayname);
+				}
+			}
+			break;
+		case 2:
+			break;
+		case 3:
+			if(!inh){
+				if(parent->arrayname){
+					struct Var* var = findVar(parent->arrayname);
+					struct Type* type = var->type;
+					assert(type->kind == ARRAY);
+					assert(!strcmp(node->name, "INT"));
+					type->array.size = node->intgr;
+					struct Type* t = type;
+					char* name = (char*)malloc(sizeof(char)*NAME_MAX_LENGTH);
+					name[0] = '\0';
+					while(t->kind == ARRAY){
+						char *number = (char*)malloc(sizeof(char)*NAME_MAX_LENGTH);
+						sprintf(number, "[%d]", t->array.size);
+						strcat(name, number);
+						free(number);
+						t = t->array.elem;
+					}
+					char *temp = (char*)malloc(sizeof(char)*NAME_MAX_LENGTH);
+					strcpy(temp, t->typeName);
+					strcat(temp, name);
+					free(name);
+					type->typeName = temp;
+					var->type = type;
+				}
+			}
+			break;
+		case 4:
+			break;
+	}
 }
 
 make_helper(Compst){
@@ -504,6 +569,9 @@ make_helper(Compst){
 		}
 		break;
 		case 3:
+		if(inh){
+			node->funcname = parent->funcname;
+		}
 		break;
 		case 4:
 		break;
@@ -512,67 +580,92 @@ make_helper(Compst){
 	}
 }
 
-make_helper(ExpASSIGNExp){
+make_helper(StmtList1){
 	switch(location){
 		case 1:
-		if(!inh)
-			parent->typeinfo = node->typeinfo;
-		break;
+			if(inh){
+				node->funcname = parent->funcname;
+			}
+			break;
 		case 2:
-		break;
-		case 3:
-		if(inh)return;
-		if(parent->typeinfo->kind != node->typeinfo->kind)
-			printf("Error type 5 at Line %d: Type mismatched for assignment.\n",node->line);
-		else{
-			if(parent->typeinfo->kind == BASIC){
-				if(parent->typeinfo->basic != node->typeinfo->basic)
-					printf("Error type 5 at Line %d: Type mismatched for assignment.\n",node->line);
+			if(inh){
+				node->funcname = parent->funcname;
 			}
-			else if(parent->typeinfo->kind == STRUCTURE){
-				if(! structEqual(parent->typeinfo, node->typeinfo))
-					printf("Error type 5 at Line %d: Type mismatched for assignment.\n",node->line);
-			}
-			else if(parent->typeinfo->kind == ARRAY){
-				if(! arrayEqual(parent->typeinfo, node->typeinfo))
-					printf("Error type 6 at Line %d: The left-hand side of an assignment",node->line); 
-			}
-			else
-				assert(0);
-		}
-		break;
-		default:
-		assert(0);
+			break;
 	}
 }
 
-make_helper(ExpDOTID){
-	//TODO:检测错误类型14,最好支持递归取结构体的域
+make_helper(Stmt2){
+	assert(location == 1);
+	if(inh){
+		node->funcname = parent->funcname;
+	}
+}
+
+make_helper(Stmt3){
 	switch(location){
 		case 1:
-		if(!inh){
-			parent->typeinfo = node->typeinfo;
-		}
-		break;
+			break;
 		case 2:
-		break;
+			if(!inh){
+				assert(parent->funcname);
+				struct Func* func = findFunc(parent->funcname);
+				if(!typeEqual(node->typeinfo, func->rettype))
+					printf("Error type 8 at Line %d: Type dismatched for return.\n",node->line);
+				}
+			break;
 		case 3:
-		if(!inh){
-			struct Type* typeinfo = parent->typeinfo;
-			if(typeinfo->kind != STRUCTURE)
-				printf("Error type 13 at Line %d: Illegal use of \".\".\n",node->line);
-			else{
-				struct FieldList* field = typeinfo->structure;
-				for( ; field; field = field->next)
-					if(!strcmp(node->idtype, field->name))
-						break;
-				if(!field)
-					printf("Error type 14 at Line %d: Non-existent field \"%s\".\n",node->line,node->idtype);
-				else
-					parent->typeinfo = field->type;
-			}
-		}
-		break;
+			break;
+	}
+}
+
+make_helper(Stmt4){
+	switch(location){
+		case 1:
+			break;
+		case 2:
+			break;
+		case 3:
+			if(inh) return;
+			if(!typeEqual(node->typeinfo, findType("int")))
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+			break;
+		case 4:
+			break;
+		case 5:
+			if(inh)
+				node->funcname = parent->funcname;
+			break;
+	}
+}
+
+make_helper(Stmt5){
+	switch(location){
+		case 1:case 2:case 4:case 6:
+			break;
+		case 3:
+			if(inh) return;
+			if(!typeEqual(node->typeinfo, findType("int")))
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+			break;
+		case 5:case 7:
+			if(inh)
+				node->funcname = parent->funcname;
+	}
+}
+
+make_helper(Stmt6){
+	switch(location){
+		case 1:case 2:case 4:
+			break;
+		case 3:
+			if(inh) return;
+			if(!typeEqual(node->typeinfo, findType("int")))
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+			break;
+		case 5:
+			if(inh)
+				node->funcname = parent->funcname;
 	}
 }
 
@@ -624,6 +717,7 @@ make_helper(FunDec2){
 			printf("Error type 4 at Line %d: Redefined function \"%s\".\n",node->line,node->idtype);
 		else
 			addFunc(node->idtype, parent->typeinfo);
+		parent->funcname = node->idtype;
 	}
 }
 
@@ -632,8 +726,9 @@ void addParam(struct GrammerTree* node, struct Param* param){
 	if(root)
 	{
 		struct Param* p = root;
-		while(p->next)
+		while(p->next){
 			p = p->next;
+		}
 		p->next = param;
 	}
 	else
@@ -655,6 +750,7 @@ make_helper(DefList1){
 		break;
 		case 2:
 		//进入下一个DefList节点
+		//TODO:question
 		if(inh){
 			node->stru = parent->stru;
 			node->tag = parent->tag;
@@ -702,8 +798,9 @@ make_helper(ParamDec){
 				parent->typeinfo = node->typeinfo;
 			break;
 		case 2:
-			if(inh)
+			if(inh){
 				node->typeinfo = parent->typeinfo;
+			}
 			else{
 				struct Param* param = (struct Param*)malloc(sizeof(struct Param));
 				param->type = node->typeinfo;
@@ -716,6 +813,231 @@ make_helper(ParamDec){
 	}
 }
 
+make_helper(ExpASSIGNExp){
+	switch(location){
+		case 1:
+		if(!inh){
+			if(!node->isLeft)
+				printf("Error type 6 at Line %d: The left-hand side of an assignment must be a variable.\n",node->line);
+			parent->typeinfo = node->typeinfo;
+		}
+		break;
+		case 2:
+		break;
+		case 3:
+		if(inh)return;
+		if(!typeEqual(parent->typeinfo, node->typeinfo))
+			printf("Error type 5 at Line %d: Type mismatched for assignment.\n",node->line);
+		break;
+		default:
+		assert(0);
+	}
+}
+
+make_helper(ExpBOOL){ // exp for bool
+	switch(location){
+		case 1:
+			if(inh) return;
+			if(!typeEqual(node->typeinfo, findType("int")))
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+			break;
+		case 2:
+			break;
+		case 3:
+			if(inh) return;
+			if(!typeEqual(node->typeinfo, findType("int")))
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+			else
+				parent->typeinfo = node->typeinfo;
+			break;
+		default:
+			assert(0);
+	}
+}
+
+make_helper(ExpPMSD){ // exp for plus minus star div
+	switch(location){
+		case 1:
+			if(inh) return;
+			if(node->typeinfo->kind != BASIC)
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+			parent->typeinfo = node->typeinfo;
+			break;
+		case 2:
+			break;
+		case 3:
+			if(inh) return;
+			if(!typeEqual(node->typeinfo, parent->typeinfo))
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+			break;
+		default:
+			assert(0);
+	}
+}
+
+make_helper(ExpLP){ // exp for (exp)
+	switch(location){
+		case 1:
+			break;
+		case 2:
+			if(inh) return;
+			parent->typeinfo = node->typeinfo;
+			break;
+		case 3:
+			break;
+		default:
+			assert(0);
+	}
+}
+
+make_helper(ExpUMINUS){ // exp for minus exp
+	switch(location){
+		case 1:
+			break;
+		case 2:
+			if(inh) return;
+			if(node->typeinfo->kind != BASIC)
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+			parent->typeinfo = node->typeinfo;
+			break;
+		default:
+			assert(0);
+	}
+}
+
+make_helper(ExpNOT){ // exp for not
+	switch(location){
+		case 1:
+			break;
+		case 2:
+			if(inh) return;
+			if(!typeEqual(node->typeinfo, findType("int")))
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+			else
+				parent->typeinfo = node->typeinfo;
+			break;
+	}
+}
+
+make_helper(ExpFunc1){
+	switch(location){
+		case 1:
+			if(!inh){
+				char* name = node->idtype;
+				if(findVar(name)){
+					printf("Error type 11 at Line %d: \"%s\" is not a function.\n",node->line,node->idtype);
+					return;
+				}
+				struct Func* func = findFunc(name);
+				if(!func)
+					printf("Error type 2 at Line %d: Undefined function \"%s\".\n",node->line,node->idtype);
+				else{
+					parent->funcname = name;
+					parent->typeinfo = func->rettype;
+				}
+			}
+			break;
+		case 2:
+			break;
+		case 3:
+			if(inh) return;
+			char* name = parent->funcname;
+			if(!name) return;
+			struct Func* func = findFunc(name);
+			struct Param* p1 = func->head, *p2 = node->param;
+			for(; p1 && p2; p1 = p1->next, p2 = p2->next){
+				if(!typeEqual(p1->type, p2->type))
+					printf("Error type 9 at Line %d: Function is not applicable for arguments.\n",node->line);
+			}
+			if(p1 || p2)
+				printf("Error type 9 at Line %d: Function is not applicable for arguments.\n",node->line);
+
+			break;
+		case 4:
+			break;
+	}
+}
+
+make_helper(ExpFunc2){
+	switch(location){
+		case 1:
+			if(inh) return;
+			char *name = node->idtype;
+			if(findVar(name)){
+				printf("Error type 11 at Line %d: \"%s\" is not a function.\n",node->line,node->idtype);
+				return;
+			}
+			struct Func* func = findFunc(name);
+			if(!func)
+				printf("Error type 2 at Line %d: Undefined function \"%s\".\n",node->line,node->idtype);
+			else{
+				if(func->numOfParams != 0)
+					printf("Error type 9 at Line %d: Function is not applicable for arguments.\n",node->line);
+				parent->typeinfo = func->rettype;
+			}
+
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+	}
+}
+
+make_helper(ExpArray){
+	switch(location){
+		case 1:
+			if(!inh){
+				if(node->typeinfo->kind != ARRAY)
+					printf("Error type 10 at Line %d: The exp is not a array.\n",node->line);
+				parent->typeinfo = node->typeinfo->array.elem;
+				parent->isLeft = 1;
+			}
+			break;
+		case 2:
+			break;
+		case 3:
+			if(!inh){
+				struct Type* INT = findType("int");
+				if(!typeEqual(node->typeinfo, INT))
+					printf("Error type 12 at Line %d: The exp is not a integer.\n",node->line);
+			}
+			break;
+		case 4:
+			break;
+	}
+}
+
+make_helper(ExpDOTID){
+	switch(location){
+		case 1:
+		if(!inh){
+			parent->typeinfo = node->typeinfo;
+			parent->isLeft = 1;
+		}
+		break;
+		case 2:
+		break;
+		case 3:
+		if(!inh){
+			struct Type* typeinfo = parent->typeinfo;
+			if(typeinfo->kind != STRUCTURE)
+				printf("Error type 13 at Line %d: Illegal use of \".\".\n",node->line);
+			else{
+				struct FieldList* field = typeinfo->structure;
+				for( ; field; field = field->next)
+					if(!strcmp(node->idtype, field->name))
+						break;
+				if(!field)
+					printf("Error type 14 at Line %d: Non-existent field \"%s\".\n",node->line,node->idtype);
+				else
+					parent->typeinfo = field->type;
+			}
+		}
+		break;
+	}
+}
+
 make_helper(ExpID){
 	assert(location == 1);
 	if(inh)return;//synthesize information from child-node
@@ -724,6 +1046,7 @@ make_helper(ExpID){
 		printf("Error type 1 at Line %d: Undefined variable \"%s\".\n",node->line,node->idtype);
 	else{
 		parent->typeinfo = var->type;
+		parent->isLeft = 1;
 	}
 }
 
@@ -734,9 +1057,39 @@ make_helper(ExpINT){
 }
 
 make_helper(ExpFLOAT){
-	assert(location==1);
-	if(!inh)
+	assert(location == 1);
+	if(!inh){
 		parent->typeinfo = findType("float");
+	}
+}
+
+make_helper(Args1){
+	switch(location){
+		case 1:
+			if(inh) return;
+			struct Param* param = (struct Param*)malloc(sizeof(struct Param));
+			param->type = node->typeinfo;
+			param->next = NULL;
+			addParam(parent, param);
+			break;
+		case 2:
+			break;
+		case 3:
+			if(inh) return;
+			addParam(parent, node->param);
+			break;
+		default:
+			assert(0);
+	}
+}
+
+make_helper(Args2){
+	assert(location == 1);
+	if(inh) return;
+	struct Param* param = (struct Param*)malloc(sizeof(struct Param));
+	param->type = node->typeinfo;
+	param->next = NULL;
+	addParam(parent, param);
 }
 
 void print_table(){
@@ -745,11 +1098,19 @@ void print_table(){
 			printf("%d %s\n", typeTable[i]->kind, typeTable[i]->typeName);
 	}
 	printf("\n");
-	/*
+	
 	for(int i=0;i<0x3fff;i++){
-		if(varTable[i])
-			printf("%d %s\n", varTable[i]->type, varTable[i]->name);
-	}*/
+		if(varTable[i] && varTable[i]->type && varTable[i]->name){
+			if(varTable[i]->type->kind == ARRAY){
+				struct Type* type = varTable[i]->type;
+				while(type->array.size){
+					printf("%d ",type->array.size);
+					type = type->array.elem;
+				}
+			}
+			printf("%d %s %s\n", varTable[i]->type->kind, varTable[i]->name, varTable[i]->type->typeName);
+		}
+	}
 	printf("\n");
 	for(int i=0;i<0x3fff;i++){
 		if(funcTable[i]){
