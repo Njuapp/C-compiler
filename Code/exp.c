@@ -46,19 +46,41 @@ make_helper(ExpBOOL){ // exp for bool
 	}
 }
 
-make_helper(ExpPMSD){ // exp for plus minus star div
+make_helper(ExpRELOP){//Exp for relational operation such as <,>,=,etc.
 	switch(location){
 		case 1:
 			if(inh) return;
-			if(node->typeinfo->kind != BASIC)
-				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 			parent->typeinfo = node->typeinfo;
 			break;
 		case 2:
 			break;
 		case 3:
 			if(inh) return;
-			if(!typeEqual(node->typeinfo, parent->typeinfo))
+			struct Type* ltype = parent->typeinfo;
+			struct Type* rtype = node->typeinfo;
+			if(ltype->kind != BASIC || rtype->kind!= BASIC || ltype->basic != rtype->basic)
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+			else
+				parent->typeinfo = findType("int");
+			break;
+		default:
+			assert(0);
+	}	
+}
+
+make_helper(ExpPMSD){ // exp for plus minus star div
+	switch(location){
+		case 1:
+			if(inh) return;
+			parent->typeinfo = node->typeinfo;
+			break;
+		case 2:
+			break;
+		case 3:
+			if(inh) return;
+			struct Type* ltype = parent->typeinfo;
+			struct Type* rtype = node->typeinfo;
+			if(ltype->kind!=BASIC || !typeEqual(ltype, rtype))
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 			break;
 		default:
@@ -115,7 +137,7 @@ make_helper(ExpFunc1){
 		case 1:
 			if(!inh){
 				char* name = node->idtype;
-				if(findVar(name)){
+				if(findVar(name) || findType(name)){
 					printf("Error type 11 at Line %d: \"%s\" is not a function.\n",node->line,node->idtype);
 					return;
 				}

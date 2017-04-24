@@ -40,7 +40,8 @@ make_helper(StructDef){
 		}
 		else{
 			struct Type* struType = findType(parent->typeName);
-			if(struType)
+			struct Var* var = findVar(parent->typeName);
+			if(struType|| var)
 				printf("Error Type 16 at Line %d: Duplicated name \"%s\".\n", parent->line, parent->typeName);
 			else{
 				if(!parent->typeName){

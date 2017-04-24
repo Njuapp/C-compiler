@@ -75,6 +75,7 @@ make_helper(Dec1);
 make_helper(Dec2);
 make_helper(ExpASSIGNExp);
 make_helper(ExpBOOL);
+make_helper(ExpRELOP);
 make_helper(ExpPMSD);
 make_helper(ExpLP);
 make_helper(ExpUMINUS);

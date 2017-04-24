@@ -19,7 +19,7 @@ helper_fun semantics [64]={
 	//32-47
 	DefList1, inv, Def, DecList1,
 	DecList2, Dec1, Dec2, ExpASSIGNExp,
-	ExpBOOL, ExpBOOL, ExpBOOL, ExpPMSD,
+	ExpBOOL, ExpBOOL, ExpRELOP, ExpPMSD,
 	ExpPMSD, ExpPMSD, ExpPMSD, ExpLP,
 	//48-63
 	ExpUMINUS, ExpNOT, ExpFunc1, ExpFunc2,
@@ -205,6 +205,8 @@ make_helper(Dec2){
 		if(inh){
 			node->stru = parent->stru;
 			node->tag = parent->tag;
+			if(parent->tag == STRU)
+				printf("Error type 15 at Line %d: Trying to initialize a field in definition of a structure type.\n",node->line);
 			node->typeinfo = parent->typeinfo;
 		}
 		break;
@@ -249,6 +251,7 @@ make_helper(VarDec1){
 				temp = temp ->next;
 			temp->next = nwnode;
 		}
+		parent->arrayname = node->idtype;
 	}
 	else{
 		//不是在结构体里面定义的，说明是定义的变量
@@ -256,7 +259,8 @@ make_helper(VarDec1){
 		//有出现过报错，重复定义
 		//否则，添加进变量符号表里去
 		struct Var * var = findVar(node->idtype);
-		if(var)
+		struct Type * struType = findType(node->idtype);
+		if(var || struType)
 			printf("Error type 3 at Line %d: Redefined variable \"%s\".\n",node->line,node->idtype);
 		else{
 			if(parent->typeinfo->kind == STRUCTURE)
@@ -272,16 +276,34 @@ make_helper(VarDec2){
 		case 1:
 			if(inh){
 				node->typeinfo = parent->typeinfo;
+				node->stru = parent->stru;
+				node->tag = parent->tag;
 			}
 			else{
 				if(node->arrayname){
-					struct Type* type = (struct Type*)malloc(sizeof(struct Type));
-					type->kind = ARRAY;
-					struct Var* var = findVar(node->arrayname);
-					type->array.elem = var->type;
-					var->type = type;
-					parent->arrayname = node->arrayname;
-					printf("array %s\n",node->arrayname);
+					if(node->tag == STRU){
+						struct FieldList* field = node->stru;
+						while(field->next)
+							field = field->next;
+						struct Type* fieldType = field->type;
+						struct Type* type = (struct Type*)malloc(sizeof(struct Type));
+						type->kind = ARRAY;
+						type->array.elem = fieldType;
+						type->next =0;
+						type->typeName = 0;
+						field->type = type;
+						parent->arrayname = node->arrayname;
+					}
+					else{
+						struct Type* type = (struct Type*)malloc(sizeof(struct Type));
+						type->kind = ARRAY;
+						struct Var* var = findVar(node->arrayname);
+						type->array.elem = var->type;
+						type->typeName = 0;
+						type->next = 0;
+						var->type = type;
+						parent->arrayname = node->arrayname;
+					}
 				}
 			}
 			break;
@@ -290,11 +312,20 @@ make_helper(VarDec2){
 		case 3:
 			if(!inh){
 				if(parent->arrayname){
-					struct Var* var = findVar(parent->arrayname);
-					struct Type* type = var->type;
+					struct Type* type = 0;
+					if(parent->tag == STRU){
+						struct FieldList* field = parent->stru;
+						while(field->next)
+							field = field->next;
+						type = field->type;
+						type->array.size = node->intgr;
+					}
+					else{
+						struct Var* var = findVar(parent->arrayname);
+						type = var->type;
+						type->array.size =node->intgr;
+					}
 					assert(type->kind == ARRAY);
-					assert(!strcmp(node->name, "INT"));
-					type->array.size = node->intgr;
 					struct Type* t = type;
 					char* name = (char*)malloc(sizeof(char)*NAME_MAX_LENGTH);
 					name[0] = '\0';
@@ -310,7 +341,7 @@ make_helper(VarDec2){
 					strcat(temp, name);
 					free(name);
 					type->typeName = temp;
-					var->type = type;
+					printf("array %s type:%s\n",parent->arrayname,temp);
 				}
 			}
 			break;

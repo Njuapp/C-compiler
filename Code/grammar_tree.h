@@ -8,7 +8,7 @@ struct GrammerTree{
 	int line;
 	char* name;
 	int prod;//The production rule we used to generate this node
-	int tag;//STRU(2) 表示结构
+	int tag;//NOSTRU(0),表示不是结构；STRU(1) 表示结构
 	struct GrammerTree* l;
 	struct GrammerTree* r;
 
