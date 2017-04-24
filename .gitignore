@@ -2,6 +2,7 @@
 *.o
 *.d
 *.l
+*.pdf
 parser
 lex.yy.c
 syntax.tab.c
