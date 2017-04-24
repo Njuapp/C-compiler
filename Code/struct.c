@@ -100,6 +100,5 @@ make_helper(OptTag2){
 make_helper(Tag){
 	assert(location==1);
 	if(inh)return;
-//	printf("Tag %s.\n",node->idtype);	
 	parent->typeName = node->idtype;
 }

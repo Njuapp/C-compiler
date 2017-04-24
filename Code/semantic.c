@@ -280,6 +280,7 @@ make_helper(VarDec2){
 				node->tag = parent->tag;
 			}
 			else{
+				parent->stru = node->stru;
 				if(node->arrayname){
 					if(node->tag == STRU){
 						struct FieldList* field = node->stru;
@@ -341,7 +342,6 @@ make_helper(VarDec2){
 					strcat(temp, name);
 					free(name);
 					type->typeName = temp;
-					printf("array %s type:%s\n",parent->arrayname,temp);
 				}
 			}
 			break;
