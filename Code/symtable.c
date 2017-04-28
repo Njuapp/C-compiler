@@ -118,11 +118,6 @@ void addStruType(struct FieldList* stru, char* typeName){
 	nwnode->structure = stru;
 	nwnode->typeName = typeName;
 	struct FieldList* t = stru;
-	printf("----------\n");
-	printf("Structure %s contains:\n",typeName);
-	for( ; t; t = t->next)
-		printf("field name:%s type:%s\n",t->name, t->type->typeName);
-	printf("----------\n");
 	nwnode->next = typeTable[h];
 	typeTable[h] = nwnode;
 }

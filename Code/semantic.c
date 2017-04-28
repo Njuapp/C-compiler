@@ -263,8 +263,6 @@ make_helper(VarDec1){
 		if(var || struType)
 			printf("Error type 3 at Line %d: Redefined variable \"%s\".\n",node->line,node->idtype);
 		else{
-			if(parent->typeinfo->kind == STRUCTURE)
-				printf("struct-type variable %s.\n",node->idtype);
 			addVar(node->idtype, parent->typeinfo);
 			parent->arrayname = node->idtype;
 		}
