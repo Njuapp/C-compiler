@@ -28,6 +28,8 @@ struct GrammerTree * create(char* name, int prod, int num, ...){
 	a->isParam = 0;
 	a->place = NULL;
 	a->isBoolOrValue = 0;
+	a->label_true = NULL;
+	a->label_false = NULL;
 	
 	va_start(valist, num);
 	struct GrammerTree * temp = (struct GrammerTree*)malloc(sizeof(struct GrammerTree));

@@ -47,21 +47,63 @@ make_helper(ExpBOOL){ // exp for bool
 }
 
 make_helper(ExpRELOP){//Exp for relational operation such as <,>,=,etc.
+	static Operand t1 = NULL;
+	static Operand t2 = NULL;
+	static Operand relop = NULL;
 	switch(location){
 		case 1:
-			if(inh) return;
+			if(inh){
+				//intercode
+				if(!parent->isBoolOrValue){
+					Operand label1 = new_operand(oLABEL, 0, 0.0, new_label());
+					parent->label_true = label1;
+					Operand label2 = new_operand(oLABEL, 0, 0.0, new_label());
+					parent->label_false = label2;
+					if(parent->place){
+						Operand op1 = parent->place;
+						Operand op2 = new_operand(CONSTANT_INT, 0, 0.0, NULL);
+						InterCode code = new_intercode(iASSIGN);
+						code->operate2.op1 = op1;
+						code->operate2.op2 = op2;
+						addCode(code, context);
+					}
+				}
+				t1 = new_operand(VARIABLE, 0, 0.0, new_temp());
+				node->place = t1;
+				return;
+			}
 			parent->typeinfo = node->typeinfo;
+	
 			break;
 		case 2:
+			//intercode
+			relop = new_operand(oRELOP, 0, 0.0, node->idtype);		
 			break;
 		case 3:
-			if(inh) return;
+			if(inh){
+				//intercode
+				t2 = new_operand(VARIABLE, 0, 0.0, new_temp());
+				node->place = t2;
+			   	return;
+			}
 			struct Type* ltype = parent->typeinfo;
 			struct Type* rtype = node->typeinfo;
 			if(ltype->kind != BASIC || rtype->kind!= BASIC || ltype->basic != rtype->basic)
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 			else
 				parent->typeinfo = findType("int");
+
+			//intercode
+			InterCode code = new_intercode(iREGOTO);
+			code->operate4.op1 = t1;
+			code->operate4.op2 = relop;
+			code->operate4.op3 = t2;
+			code->operate4.op4 = parent->label_true;
+			addCode(code, context);
+
+			code = new_intercode(iGOTO);
+			code->operate1.op = parent->label_false;
+			addCode(code, context);
 			break;
 		default:
 			assert(0);

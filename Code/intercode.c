@@ -26,6 +26,10 @@ Operand new_operand(int kind, int intValue, float floatValue, char* name){
 		case ADDRESS:
 			target->addr = name;
 			break;
+		case oLABEL:
+			target->label = name;
+		case oRELOP:
+			target->relop = name;
 		default:
 			assert(0);
 	}
@@ -61,8 +65,10 @@ int op_num(int kind){
 		return 1;
 	else if(kind >= OP2_OFF && kind < OP3_OFF)
 		return 2;
-	else if(kind >= OP3_OFF)
+	else if(kind >= OP3_OFF && kind < OP4_OFF)
 		return 3;
+	else
+		return 4;
 }
 
 char* new_temp(){
@@ -97,7 +103,7 @@ char* get_str(Operand op){
 	else if(op->kind == CONSTANT_FLOAT)
 		sprintf(text, "#%f", op->floatValue);
 	else if(op->kind == FUNC_NAME)
-		sprintf();
+		sprintf(text, "%s", op->func_name);
 	return text;
 }
 
@@ -107,7 +113,7 @@ void print_intercode(){
 	while(p){
 		InterCode code = p->code;
 		char text[CODE_LENGTH];
-		Operand op1, op2, op3;
+		Operand op1, op2, op3, op4;
 		int op_number = op_num(code->kind);
 		if(op_number == 1)
 			op1 = code->operate1.op;
@@ -115,10 +121,16 @@ void print_intercode(){
 			op1 = code->operate2.op1;
 			op2 = code->operate2.op2;
 		}
-		else{
+		else if(op_number == 3){
 			op1 = code->operate3.op1;
 			op2 = code->operate3.op2;
 			op3 = code->operate3.op3;
+		}
+		else{
+			op1 = code->operate4.op1;
+			op2 = code->operate4.op2;
+			op3 = code->operate4.op3;
+			op4 = code->operate4.op4;
 		}
 		char *temp = NULL;
 		switch(code->kind){
