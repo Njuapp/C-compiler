@@ -18,14 +18,17 @@ make_helper(ExpASSIGNExp){
 		case 2:
 		break;
 		case 3:
-		if(inh)return;
+		if(inh){
+			node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+			return;
+		}
 		if(!typeEqual(parent->typeinfo, node->typeinfo))
 			printf("Error type 5 at Line %d: Type mismatched for assignment.\n",node->line);
 		InterCode code = new_intercode(iASSIGN);
 		code->operate2.op1 = parent->place;
 		code->operate2.op2 = node->place;
 		addCode(code, context);
-		break;
+		
 		default:
 		assert(0);
 	}
@@ -74,17 +77,23 @@ make_helper(ExpRELOP){//Exp for relational operation such as <,>,=,etc.
 	}	
 }
 
-make_helper(ExpPLUS){ // exp for plus minus star div
+make_helper(ExpPLUS){ // exp for plus minus star div 
 	switch(location){
 		case 1:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			parent->typeinfo = node->typeinfo;
 			parent->place = node->place;
 			break;
 		case 2:
 			break;
 		case 3:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			struct Type* ltype = parent->typeinfo;
 			struct Type* rtype = node->typeinfo;
 			if(ltype->kind!=BASIC || !typeEqual(ltype, rtype))
@@ -106,14 +115,20 @@ make_helper(ExpPLUS){ // exp for plus minus star div
 make_helper(ExpMINUS){ // exp for plus minus star div
 	switch(location){
 		case 1:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			parent->typeinfo = node->typeinfo;
 			parent->place = node->place;
 			break;
 		case 2:
 			break;
 		case 3:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			struct Type* ltype = parent->typeinfo;
 			struct Type* rtype = node->typeinfo;
 			if(ltype->kind!=BASIC || !typeEqual(ltype, rtype))
@@ -136,14 +151,20 @@ make_helper(ExpMINUS){ // exp for plus minus star div
 make_helper(ExpSTAR){ // exp for plus minus star div
 	switch(location){
 		case 1:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			parent->typeinfo = node->typeinfo;
 			parent->place = node->place;
 			break;
 		case 2:
 			break;
 		case 3:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			struct Type* ltype = parent->typeinfo;
 			struct Type* rtype = node->typeinfo;
 			if(ltype->kind!=BASIC || !typeEqual(ltype, rtype))
@@ -166,14 +187,20 @@ make_helper(ExpSTAR){ // exp for plus minus star div
 make_helper(ExpDIV){ // exp for plus minus star div
 	switch(location){
 		case 1:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			parent->typeinfo = node->typeinfo;
 			parent->place = node->place;
 			break;
 		case 2:
 			break;
 		case 3:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			struct Type* ltype = parent->typeinfo;
 			struct Type* rtype = node->typeinfo;
 			if(ltype->kind!=BASIC || !typeEqual(ltype, rtype))
@@ -275,6 +302,11 @@ make_helper(ExpFunc1){
 			}
 			if(p1 || p2)
 				printf("Error type 9 at Line %d: Function is not applicable for arguments.\n",node->line);
+			//Intercode
+			Operand op1 = new_operand(VARIABLE, 0, 0.0, new_temp());
+			Operand op2 = new_operand(FUNC_NAME, 0, 0.0, name);
+			INIT_2_OP(iCALL)
+			parent->place = op1;
 
 			break;
 		case 4:
@@ -299,7 +331,10 @@ make_helper(ExpFunc2){
 					printf("Error type 9 at Line %d: Function is not applicable for arguments.\n",node->line);
 				parent->typeinfo = func->rettype;
 			}
-
+			Operand op1 = new_operand(VARIABLE, 0, 0.0, new_temp());
+			Operand op2 = new_operand(FUNC_NAME, 0, 0.0, name);
+			INIT_2_OP(iCALL)
+			parent->place = op1;
 			break;
 		case 2:
 			break;

@@ -143,6 +143,10 @@ void print_intercode(){
 				sprintf(text, "%s := %s\n", op1->var, temp);
 				free(temp);
 				break;
+			case iCALL:
+				assert(op2->kind == FUNC_NAME);
+				sprintf(text, "%s := CALL %s\n", op1->var, get_str(op2));
+				break;
 			case iDEC:
 				assert(op1->kind == VARIABLE && op2->kind == CONSTANT_INT);
 				sprintf(text, "DEC %s %d\n", op1->var, op2->intValue * WORD_LENGTH);
@@ -158,6 +162,9 @@ void print_intercode(){
 				break;
 			case iDIV:
 				sprintf(text, "%s := %s / %s\n", op1->var , get_str(op2), get_str(op3));
+				break;
+			case iARG:
+				sprintf(text, "ARG %s\n",get_str(op1));
 				break;
 			default:
 				printf("Print wrong type %d\n", code->kind);

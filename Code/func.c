@@ -142,6 +142,8 @@ make_helper(Args1){
 			param->type = node->typeinfo;
 			param->next = NULL;
 			addParam(parent, param);
+			Operand op1 = node->place;
+			INIT_1_OP(iARG)
 			break;
 		case 2:
 			break;
@@ -160,6 +162,8 @@ make_helper(Args2){
 	struct Param* param = (struct Param*)malloc(sizeof(struct Param));
 	param->type = node->typeinfo;
 	param->next = NULL;
+	Operand op1 = node->place;
+	INIT_1_OP(iARG)
 	addParam(parent, param);
 }
 

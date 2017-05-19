@@ -69,4 +69,9 @@ char* new_var();
 	code->operate2.op2 = op2;\
 	addCode(code, context);
 
+#define INIT_1_OP(KIND) \
+	InterCode code = new_intercode(KIND);\
+	code->operate1.op = op1;\
+	addCode(code, context);
+
 #endif
