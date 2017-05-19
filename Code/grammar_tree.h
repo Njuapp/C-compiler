@@ -4,7 +4,11 @@
 extern int yylineno;
 extern char* yytext;
 void yyerror(char *s,...);
-
+struct Operands_{
+	Operand param;
+	struct Operands_ *next;
+};
+typedef struct Operands_* Operands;
 struct GrammerTree{
 	int line;
 	char* name;
@@ -28,6 +32,7 @@ struct GrammerTree{
 	int isBoolOrValue;
 	Operand label_true;
 	Operand label_false;
+	Operands paramlist;	
 	// intermediate code off
 
 	union{

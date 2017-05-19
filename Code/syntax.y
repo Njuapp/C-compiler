@@ -40,6 +40,7 @@ int yydebug = 1;
 
 Program :ExtDefList{
 		$$=create("Program",1,1,$1);
+		//eval($$,0);
 		intercodeInit();
 		sdt($$);
 		}
