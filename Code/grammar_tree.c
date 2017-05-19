@@ -49,7 +49,8 @@ struct GrammerTree * create(char* name, int prod, int num, ...){
 		a->line = t;
 		a->l = a->r = NULL;
 		if( (!strcmp(a->name,"ID")) || (!strcmp(a->name,"TYPE"))
-				|| (!strcmp(a->name, "RELOP"))){
+				|| !strcmp(a->name, "RELOP") || !strcmp(a->name, "AND")
+				|| !strcmp(a->name, "OR")){
 			char* t = (char*)malloc(sizeof(char*)*NAME_MAX_LENGTH);
 			strcpy(t, yytext);
 			a->idtype = t;

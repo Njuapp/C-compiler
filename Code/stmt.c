@@ -101,32 +101,113 @@ make_helper(Stmt4){
 }
 
 make_helper(Stmt5){
+	static Operand label1 = NULL;
+	static Operand label2 = NULL;
+	static Operand label3 = NULL;
+	Operand op = NULL;
+	InterCode code = NULL;
 	switch(location){
 		case 1:case 2:case 4:case 6:
 			break;
 		case 3:
-			if(inh) return;
+			if(inh){
+				label1 = new_operand(oLABEL, 0, 0.0, new_label());
+				label2 = new_operand(oLABEL, 0, 0.0, new_label());
+				label3 = new_operand(oLABEL, 0, 0.0, new_label());
+				node->label_true = label1;
+				node->label_false = label2;
+				node->isBoolOrValue = 1;
+				return;
+			}
 			if(!typeEqual(node->typeinfo, findType("int")))
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+			
+			op = label1;
+			code = new_intercode(iLABEL);
+			code->operate1.op = op;
+			addCode(code, context);
 			break;
-		case 5:case 7:
-			if(inh)
+		case 5:
+			if(inh){
 				node->funcname = parent->funcname;
+				return;
+			}
+			op = label3;
+			code = new_intercode(iGOTO);
+			code->operate1.op = op;
+			addCode(code, context);
+
+			op = label2;
+			code = new_intercode(iLABEL);
+			code->operate1.op = op;
+			addCode(code, context);
+			break;
+		case 7:
+			if(inh){
+				node->funcname = parent->funcname;
+				return;
+			}
+			op = label3;
+			code = new_intercode(iLABEL);
+			code->operate1.op = op;
+			addCode(code, context);
+			break;
+		default:
+			assert(0);
+			break;
 	}
 }
 
 make_helper(Stmt6){
+	static Operand label1 = NULL;
+	static Operand label2 = NULL;	
+	static Operand label3 = NULL;
+	Operand op;
+	InterCode code;
 	switch(location){
 		case 1:case 2:case 4:
 			break;
 		case 3:
-			if(inh) return;
+			if(inh){
+				label1 = new_operand(oLABEL, 0, 0.0, new_label());
+				label2 = new_operand(oLABEL, 0, 0.0, new_label());
+				label3 = new_operand(oLABEL, 0, 0.0, new_label());
+				op = label1;
+				code = new_intercode(iLABEL);
+				code->operate1.op = op;
+				addCode(code, context);
+				node->label_true = label2;
+				node->label_false = label3;
+				node->isBoolOrValue = 1;
+			   	return;
+			}
 			if(!typeEqual(node->typeinfo, findType("int")))
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+	
+			op = label2;
+			code = new_intercode(iLABEL);
+			code->operate1.op = op;
+			addCode(code, context);
 			break;
 		case 5:
-			if(inh)
+			if(inh){
 				node->funcname = parent->funcname;
+				return;
+			}
+
+			op = label1;
+			code = new_intercode(iGOTO);
+			code->operate1.op = op;
+			addCode(code, context);
+
+			op = label3;
+			code = new_intercode(iLABEL);
+			code->operate1.op = op;
+			addCode(code, context);
+			break;
+		default:
+			assert(0);
+			break;
 	}
 }
 

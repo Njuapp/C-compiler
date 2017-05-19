@@ -32,21 +32,77 @@ make_helper(ExpASSIGNExp){
 }
 
 make_helper(ExpBOOL){ // exp for bool
+	static Operand relop = NULL;
+	static Operand label = NULL;
 	switch(location){
 		case 1:
-			if(inh) return;
+			if(inh){
+				//intercode
+				if(!parent->isBoolOrValue){
+					Operand label1 = new_operand(oLABEL, 0, 0.0, new_label());
+					parent->label_true = label1;
+					Operand label2 = new_operand(oLABEL, 0, 0.0, new_label());
+					parent->label_false = label2;
+					Operand op1 = parent->place;
+					Operand op2 = new_operand(CONSTANT_INT, 0, 0.0, NULL);
+					InterCode code = new_intercode(iASSIGN);
+					code->operate2.op1 = op1;
+					code->operate2.op2 = op2;
+					addCode(code, context);
+				}
+				label = new_operand(oLABEL, 0, 0.0, new_label());
+				node->label_true = label;
+				node->label_false = parent->label_false;
+				node->isBoolOrValue = 1;
+				return;
+			}
 			if(!typeEqual(node->typeinfo, findType("int")))
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+
 			break;
 		case 2:
+			if(!inh){
+				relop = new_operand(oRELOP, 0, 0.0, node->idtype);
+				Operand op = label;
+				InterCode code = new_intercode(iLABEL);
+				code->operate1.op = op;
+				addCode(code, context);		
+			}
 			break;
 		case 3:
-			if(inh) return;
+			if(inh){
+				//intercode
+				node->label_true = parent->label_true;
+				node->label_false = parent->label_false;
+				node->isBoolOrValue = 1;
+			   	return;
+			}
 			if(!typeEqual(node->typeinfo, findType("int")))
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 			else
 				parent->typeinfo = node->typeinfo;
+			
+			//intercode
+			if(!parent->isBoolOrValue){
+				Operand op1 = parent->label_true;
+				InterCode code = new_intercode(iLABEL);
+				code->operate1.op = op1;
+				addCode(code, context);
+				
+				op1 = parent->place;
+				Operand op2 = new_operand(CONSTANT_INT, 1, 0.0, NULL);
+				code = new_intercode(iASSIGN);
+				code->operate2.op1 = op1;
+				code->operate2.op2 = op2;
+				addCode(code, context);
+
+				op1 = parent->label_false;
+				code = new_intercode(iLABEL);
+				code->operate1.op = op1;
+				addCode(code, context);
+			}
 			break;
+
 		default:
 			assert(0);
 	}
@@ -65,14 +121,12 @@ make_helper(ExpRELOP){//Exp for relational operation such as <,>,=,etc.
 					parent->label_true = label1;
 					Operand label2 = new_operand(oLABEL, 0, 0.0, new_label());
 					parent->label_false = label2;
-					if(parent->place){
-						Operand op1 = parent->place;
-						Operand op2 = new_operand(CONSTANT_INT, 0, 0.0, NULL);
-						InterCode code = new_intercode(iASSIGN);
-						code->operate2.op1 = op1;
-						code->operate2.op2 = op2;
-						addCode(code, context);
-					}
+					Operand op1 = parent->place;
+					Operand op2 = new_operand(CONSTANT_INT, 0, 0.0, NULL);
+					InterCode code = new_intercode(iASSIGN);
+					code->operate2.op1 = op1;
+					code->operate2.op2 = op2;
+					addCode(code, context);
 				}
 				t1 = new_operand(VARIABLE, 0, 0.0, new_temp());
 				node->place = t1;
@@ -115,6 +169,24 @@ make_helper(ExpRELOP){//Exp for relational operation such as <,>,=,etc.
 			code = new_intercode(iGOTO);
 			code->operate1.op = parent->label_false;
 			addCode(code, context);
+			if(!parent->isBoolOrValue){
+				Operand op1 = parent->label_true;
+				InterCode code = new_intercode(iLABEL);
+				code->operate1.op = op1;
+				addCode(code, context);
+				
+				op1 = parent->place;
+				Operand op2 = new_operand(CONSTANT_INT, 1, 0.0, NULL);
+				code = new_intercode(iASSIGN);
+				code->operate2.op1 = op1;
+				code->operate2.op2 = op2;
+				addCode(code, context);
+
+				op1 = parent->label_false;
+				code = new_intercode(iLABEL);
+				code->operate1.op = op1;
+				addCode(code, context);
+			}
 			break;
 		default:
 			assert(0);
@@ -245,7 +317,12 @@ make_helper(ExpLP){ // exp for (exp)
 		case 1:
 			break;
 		case 2:
-			if(inh) return;
+			if(inh){
+				node->isBoolOrValue = parent->isBoolOrValue;
+				node->label_true = parent->label_true;
+				node->label_false = parent->label_false;
+				return;
+			}
 			parent->typeinfo = node->typeinfo;
 			parent->place = node->place;
 			break;
@@ -281,11 +358,52 @@ make_helper(ExpNOT){ // exp for not
 		case 1:
 			break;
 		case 2:
-			if(inh) return;
+			if(inh){
+				//intercode
+				if(!parent->isBoolOrValue){
+					Operand label1 = new_operand(oLABEL, 0, 0.0, new_label());
+					parent->label_true = label1;
+					Operand label2 = new_operand(oLABEL, 0, 0.0, new_label());
+					parent->label_false = label2;
+					Operand op1 = parent->place;
+					Operand op2 = new_operand(CONSTANT_INT, 0, 0.0, NULL);
+					InterCode code = new_intercode(iASSIGN);
+					code->operate2.op1 = op1;
+					code->operate2.op2 = op2;
+					addCode(code, context);
+				}
+				node->label_true = parent->label_false;
+				node->label_false = parent->label_true;
+				node->isBoolOrValue = 1;
+				return;
+			}
+
 			if(!typeEqual(node->typeinfo, findType("int")))
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 			else
 				parent->typeinfo = node->typeinfo;
+
+			//intercode
+			if(!parent->isBoolOrValue){
+				Operand op1 = parent->label_true;
+				InterCode code = new_intercode(iLABEL);
+				code->operate1.op = op1;
+				addCode(code, context);
+				
+				op1 = parent->place;
+				Operand op2 = new_operand(CONSTANT_INT, 1, 0.0, NULL);
+				code = new_intercode(iASSIGN);
+				code->operate2.op1 = op1;
+				code->operate2.op2 = op2;
+				addCode(code, context);
+
+				op1 = parent->label_false;
+				code = new_intercode(iLABEL);
+				code->operate1.op = op1;
+				addCode(code, context);
+			}
+			break;
+		default:
 			break;
 	}
 }
