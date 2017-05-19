@@ -4,12 +4,13 @@
 #define WORD_LENGTH 4
 
 struct Operand_ {
-	enum { CONSTANT_INT, CONSTANT_FLOAT, VARIABLE, FUNC_NAME } kind;
+	enum { CONSTANT_INT, CONSTANT_FLOAT, VARIABLE, FUNC_NAME, ADDRESS} kind;
 	union{
 		int intValue;
 		float floatValue;
 		char* var;
 		char* func_name;
+		char* addr;
 	};
 };
 typedef struct Operand_* Operand;

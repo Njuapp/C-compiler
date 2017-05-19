@@ -97,7 +97,7 @@ char* get_str(Operand op){
 	else if(op->kind == CONSTANT_FLOAT)
 		sprintf(text, "#%f", op->floatValue);
 	else if(op->kind == FUNC_NAME)
-		sprintf();
+		sprintf(text,"%s",op->func_name);
 	return text;
 }
 
