@@ -198,8 +198,23 @@ make_helper(Dec1){
 		node->tag = parent->tag;
 		node->typeinfo = parent->typeinfo;
 	}
-	else
+	else{
 		parent->stru = node->stru;
+
+		//intercode
+		if(node->arrayname){
+			struct Var* var = findVar(node->arrayname);
+			assert(var);
+			if(var->type->kind == ARRAY){
+				Operand op1 = var->temp_name;
+				Operand op2 = new_operand(CONSTANT_INT, var->type->array.size, 0.0, NULL);
+				InterCode code = new_intercode(iDEC);
+				code->operate2.op1 = op1;
+				code->operate2.op2 = op2;
+				addCode(code, context);
+			}
+		}
+	}
 }
 
 make_helper(Dec2){
@@ -212,13 +227,34 @@ make_helper(Dec2){
 				printf("Error type 15 at Line %d: Trying to initialize a field in definition of a structure type.\n",node->line);
 			node->typeinfo = parent->typeinfo;
 		}
+		else{
+			parent->arrayname = node->arrayname;
+		}
 		break;
 		case 2:
 		break;
 		case 3:
-		if(inh) return;
+		if(inh){
+			//intercode
+			char* temp = new_temp();
+			Operand op = new_operand(VARIABLE, 0, 0.0, temp);
+			node->place = op;
+			return;
+		}
 		if(!typeEqual(parent->typeinfo, node->typeinfo))
 			printf("Error type 5 at Line %d: Type mismatched for assignment.\n",node->line);
+		
+		//intercode
+		struct Var* var = findVar(parent->arrayname);
+		assert(var);
+		assert(var->type->kind == BASIC);
+		Operand op1 = var->temp_name;
+		Operand op2 = node->place;
+		InterCode code = new_intercode(iASSIGN);
+		code->operate2.op1 = op1;
+		code->operate2.op2 = op2;
+		addCode(code, context);
+
 		break;
 		default:
 		assert(0);
@@ -272,7 +308,7 @@ make_helper(VarDec1){
 			if(parent->isParam){
 				Operand var = new_operand(VARIABLE, 0, 0.0, temp);
 				InterCode code = new_intercode(iPARAM);
-				code->u.operate1.op = var;
+				code->operate1.op = var;
 				addCode(code, context);
 			}
 

@@ -56,12 +56,13 @@ void addVar(char* varname, struct Type* typeinfo, char* tempname){
 	nwnode->name = (char*)malloc(sizeof(char)*NAME_MAX_LENGTH);
 	strcpy(nwnode->name, varname);
 	nwnode->type = typeinfo;
-	nwnode->temp = tempname;
+	nwnode->temp_name = new_operand(VARIABLE, 0, 0.0, tempname);
 	nwnode->next = varTable[h];
 	varTable[h] = nwnode;
 }
 
 struct Var* findVar(char* varname){
+	if(!varname) return NULL;
 	unsigned int h = hash_pjw(varname);
 	struct Var* temp = varTable[h];
 	while(temp){
@@ -73,6 +74,7 @@ struct Var* findVar(char* varname){
 }
 
 struct Func* findFunc(char *funcname){
+	if(!funcname) return NULL;
 	unsigned int h = hash_pjw(funcname);
 	struct Func* temp = funcTable[h];
 	while(temp){

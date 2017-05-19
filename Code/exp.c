@@ -260,19 +260,52 @@ make_helper(ExpID){
 	else{
 		parent->typeinfo = var->type;
 		parent->isLeft = 1;
+
+		//intercode
+		Operand op1 = parent->place;
+		if(op1){
+			Operand op2 = var->temp_name;
+			InterCode code = new_intercode(iASSIGN);
+			code->operate2.op1 = op1;
+			code->operate2.op2 = op2;
+			addCode(code, context);
+		}
 	}
 }
 
 make_helper(ExpINT){
 	assert(location == 1);
-	if(!inh)
+	if(!inh){
 		parent->typeinfo = findType("int");
+	}
+	else{
+		//intercode
+		Operand op1 = parent->place;
+		if(op1){
+			Operand op2 = new_operand(CONSTANT_INT, node->intgr, 0.0, NULL);
+			InterCode code = new_intercode(iASSIGN);
+			code->operate2.op1 = op1;
+			code->operate2.op2 = op2;
+			addCode(code, context);
+		}
+	}
 }
 
 make_helper(ExpFLOAT){
 	assert(location == 1);
 	if(!inh){
 		parent->typeinfo = findType("float");
+	}
+	else{
+		//intercode
+		Operand op1 = parent->place;
+		if(op1){
+			Operand op2 = new_operand(CONSTANT_FLOAT, 0, node->flt, NULL);
+			InterCode code = new_intercode(iASSIGN);
+			code->operate2.op1 = op1;
+			code->operate2.op2 = op2;
+			addCode(code, context);
+		}
 	}
 }
 

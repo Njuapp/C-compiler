@@ -20,7 +20,7 @@ make_helper(FunDec1){
 			// intercode
 			Operand name = new_operand(FUNC_NAME, 0, 0.0, node->idtype);
 			InterCode code = new_intercode(iFUNC);
-			code->u.operate1.op = name;
+			code->operate1.op = name;
 			addCode(code, context);
 
 			break;
@@ -65,7 +65,7 @@ make_helper(FunDec2){
 		// intercode
 		Operand name = new_operand(FUNC_NAME, 0, 0.0, node->idtype);
 		InterCode code = new_intercode(iFUNC);
-		code->u.operate1.op = name;
+		code->operate1.op = name;
 		addCode(code, context);
 	}
 }

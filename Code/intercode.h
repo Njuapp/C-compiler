@@ -1,7 +1,7 @@
 #ifndef __INTERCODE_H__
 #define __INTERCODE_H__
 
-#define is_constant(kind) ((kind == CONSTANT_INT || kind == CONSTANT_FLOAT)?1:0)
+#define WORD_LENGTH 4
 
 struct Operand_ {
 	enum { CONSTANT_INT, CONSTANT_FLOAT, VARIABLE, FUNC_NAME } kind;
@@ -10,7 +10,7 @@ struct Operand_ {
 		float floatValue;
 		char* var;
 		char* func_name;
-	} u;
+	};
 };
 typedef struct Operand_* Operand;
 
@@ -30,7 +30,7 @@ struct InterCode_ {
 		struct { Operand op; } operate1;
 		struct { Operand op1, op2; } operate2;
 		struct { Operand op1, op2, op3; } operate3;
-	} u;
+	};
 };
 typedef struct InterCode_* InterCode;
 
@@ -46,6 +46,7 @@ typedef struct InterCodes_* InterCodes;
 // context is the position to generate
 extern InterCodes codeField, context;
 
+#define is_constant(kind) ((kind == CONSTANT_INT || kind == CONSTANT_FLOAT)?1:0)
 void intercodeInit();
 void addCode(InterCode code, InterCodes position/*=context*/);
 int op_num(int kind);

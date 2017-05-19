@@ -12,16 +12,16 @@ Operand new_operand(int kind, int intValue, float floatValue, char* name){
 	target->kind = kind;
 	switch(kind){
 		case CONSTANT_FLOAT:
-			target->u.floatValue = floatValue;
+			target->floatValue = floatValue;
 			break;
 		case CONSTANT_INT:
-			target->u.intValue = intValue;
+			target->intValue = intValue;
 			break;
 		case VARIABLE:
-			target->u.var = name;
+			target->var = name;
 			break;
 		case FUNC_NAME:
-			target->u.func_name = name;
+			target->func_name = name;
 			break;
 		default:
 			assert(0);
@@ -85,6 +85,19 @@ char* new_var(){
 
 #define CODE_LENGTH 50
 
+char* get_str(Operand op){
+	char *text = malloc(sizeof(char)*CODE_LENGTH);
+	if(op->kind == VARIABLE)
+		sprintf(text, "%s", op->var);
+	else if(op->kind == CONSTANT_INT)
+		sprintf(text, "#%d", op->intValue);
+	else if (op->kind == CONSTANT_FLOAT)
+		sprintf(text, "#%f", op->floatValue);
+	else
+		sprintf(text, "%s", op->func_name);
+	return text;
+}
+
 void print_intercode(){
 	printf("start to print code\n");
 	InterCodes p = codeField->next;
@@ -92,16 +105,44 @@ void print_intercode(){
 		InterCode code = p->code;
 		char text[CODE_LENGTH];
 		Operand op1, op2, op3;
+		int op_number = op_num(code->kind);
+		if(op_number == 1)
+			op1 = code->operate1.op;
+		else if(op_number == 2){
+			op1 = code->operate2.op1;
+			op2 = code->operate2.op2;
+		}
+		else{
+			op1 = code->operate3.op1;
+			op2 = code->operate3.op2;
+			op3 = code->operate3.op3;
+		}
+		char *temp = NULL;
 		switch(code->kind){
 			case iFUNC:
-				op1 = code->u.operate1.op;
 				assert(op1->kind == FUNC_NAME);
-				sprintf(text, "FUNCTION %s :\n", op1->u.func_name);			
+				sprintf(text, "FUNCTION %s :\n", op1->func_name);			
+				break;
+			case iRETURN:
+				assert(op1->kind == VARIABLE || is_constant(op1->kind));
+				temp = get_str(op1);
+				sprintf(text, "RETURN %s\n", temp);
+				free(temp);
 				break;
 			case iPARAM:
-				op1 = code->u.operate1.op;
 				assert(op1->kind == VARIABLE);
-				sprintf(text, "PARAM %s\n", op1->u.var);
+				sprintf(text, "PARAM %s\n", op1->var);
+				break;
+			case iASSIGN:
+				assert(op1->kind == VARIABLE);
+				assert(op2->kind == VARIABLE || is_constant(op2->kind));
+				temp = get_str(op2);
+				sprintf(text, "%s := %s\n", op1->var, temp);
+				free(temp);
+				break;
+			case iDEC:
+				assert(op1->kind == VARIABLE && op2->kind == CONSTANT_INT);
+				sprintf(text, "DEC %s %d\n", op1->var, op2->intValue * WORD_LENGTH);
 				break;
 			default:
 				printf("Print wrong type %d\n", code->kind);

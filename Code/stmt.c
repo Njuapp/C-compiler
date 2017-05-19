@@ -31,12 +31,22 @@ make_helper(Stmt3){
 		case 1:
 			break;
 		case 2:
-			if(!inh){
+			if(inh){
+				//intercode
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+			}
+			else{
 				assert(parent->funcname);
 				struct Func* func = findFunc(parent->funcname);
 				if(!typeEqual(node->typeinfo, func->rettype))
 					printf("Error type 8 at Line %d: Type dismatched for return.\n",node->line);
-				}
+			
+				//intercode
+				Operand op = node->place;
+				InterCode code = new_intercode(iRETURN);
+				code->operate1.op = op;
+				addCode(code, context);
+			}
 			break;
 		case 3:
 			break;

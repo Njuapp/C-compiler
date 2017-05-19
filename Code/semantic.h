@@ -20,7 +20,7 @@ struct Var{
 	char* name;
 	struct Type* type;
 
-	char* temp; //intercode
+	Operand temp_name; //intercode
 
 	struct Var* next;
 };
