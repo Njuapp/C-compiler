@@ -147,6 +147,18 @@ void print_intercode(){
 				assert(op1->kind == VARIABLE && op2->kind == CONSTANT_INT);
 				sprintf(text, "DEC %s %d\n", op1->var, op2->intValue * WORD_LENGTH);
 				break;
+			case OP3_OFF:
+				sprintf(text, "%s := %s + %s\n", op1->var , get_str(op2), get_str(op3));
+				break;
+			case iSUB:
+				sprintf(text, "%s := %s - %s\n", op1->var , get_str(op2), get_str(op3));
+				break;
+			case iMUL:
+				sprintf(text, "%s := %s * %s\n", op1->var , get_str(op2), get_str(op3));
+				break;
+			case iDIV:
+				sprintf(text, "%s := %s / %s\n", op1->var , get_str(op2), get_str(op3));
+				break;
 			default:
 				printf("Print wrong type %d\n", code->kind);
 				assert(0);
