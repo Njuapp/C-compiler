@@ -9,6 +9,7 @@ struct Type* typeTable[0x3fff];
 struct Func* funcTable[0x3fff];
 unsigned int hash_pjw(char* name){
 	unsigned int val = 0, i;
+	printf("hash: %s\n", name);
 	for(; *name ; name++){
 		val = (val << 2 ) + *name;
 		if( i = val & ~0x3fff) val = (val ^ (i >> 12) ) & 0x3fff;

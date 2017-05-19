@@ -1,5 +1,6 @@
 #include "semantic.h"
 #include "symtable.h"
+#include "intercode.h"
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -11,6 +12,7 @@ make_helper(ExpASSIGNExp){
 			if(!node->isLeft)
 				printf("Error type 6 at Line %d: The left-hand side of an assignment must be a variable.\n",node->line);
 			parent->typeinfo = node->typeinfo;
+			parent->place = node->place;
 		}
 		break;
 		case 2:
@@ -19,6 +21,10 @@ make_helper(ExpASSIGNExp){
 		if(inh)return;
 		if(!typeEqual(parent->typeinfo, node->typeinfo))
 			printf("Error type 5 at Line %d: Type mismatched for assignment.\n",node->line);
+		InterCode code = new_intercode(iASSIGN);
+		code->operate2.op1 = parent->place;
+		code->operate2.op2 = node->place;
+		addCode(code, context);
 		break;
 		default:
 		assert(0);
@@ -73,11 +79,15 @@ make_helper(ExpRELOP){//Exp for relational operation such as <,>,=,etc.
 				return;
 			}
 			parent->typeinfo = node->typeinfo;
-	
+		
+			//intercode
+			t1 = node->place;
 			break;
 		case 2:
-			//intercode
-			relop = new_operand(oRELOP, 0, 0.0, node->idtype);		
+			if(!inh){
+				//intercode
+				relop = new_operand(oRELOP, 0, 0.0, node->idtype);		
+			}
 			break;
 		case 3:
 			if(inh){
@@ -94,6 +104,7 @@ make_helper(ExpRELOP){//Exp for relational operation such as <,>,=,etc.
 				parent->typeinfo = findType("int");
 
 			//intercode
+			t2 = node->place;
 			InterCode code = new_intercode(iREGOTO);
 			code->operate4.op1 = t1;
 			code->operate4.op2 = relop;
@@ -304,7 +315,9 @@ make_helper(ExpID){
 		parent->isLeft = 1;
 
 		//intercode
-		Operand op1 = parent->place;
+		parent->place = var->temp_name;
+
+		/*
 		if(op1){
 			Operand op2 = var->temp_name;
 			InterCode code = new_intercode(iASSIGN);
@@ -312,6 +325,7 @@ make_helper(ExpID){
 			code->operate2.op2 = op2;
 			addCode(code, context);
 		}
+		*/
 	}
 }
 
@@ -322,14 +336,7 @@ make_helper(ExpINT){
 	}
 	else{
 		//intercode
-		Operand op1 = parent->place;
-		if(op1){
-			Operand op2 = new_operand(CONSTANT_INT, node->intgr, 0.0, NULL);
-			InterCode code = new_intercode(iASSIGN);
-			code->operate2.op1 = op1;
-			code->operate2.op2 = op2;
-			addCode(code, context);
-		}
+		parent->place = new_operand(CONSTANT_INT, node->intgr, 0.0, NULL);
 	}
 }
 

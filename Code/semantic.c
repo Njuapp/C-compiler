@@ -38,14 +38,14 @@ void sdt(struct GrammerTree* Program){
 
 void SDT(struct GrammerTree* node, struct GrammerTree* parent, int location){
 	if(!node)return;
-//	printf("%s %s %d start\n", node->name, parent->name, location);
+	printf("%s %s %d start\n", node->name, parent->name, location);
 	int prod = parent->prod;
 	semantics[prod](node, parent, location ,1);// node inherits something from left nodes or parent
 	SDT(node->l, node, 1);
-//	printf("%s %s %d middle\n", node->name, parent->name, location);
+	printf("%s %s %d middle\n", node->name, parent->name, location);
 	semantics[prod](node, parent, location ,0);// parent synthesizes something from child node
 	SDT(node->r, parent, location + 1);
-//	printf("%s %s %d end\n", node->name, parent->name, location);
+	printf("%s %s %d end\n", node->name, parent->name, location);
 }
 
 make_helper(inv){

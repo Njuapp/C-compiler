@@ -28,8 +28,10 @@ Operand new_operand(int kind, int intValue, float floatValue, char* name){
 			break;
 		case oLABEL:
 			target->label = name;
+			break;
 		case oRELOP:
 			target->relop = name;
+			break;
 		default:
 			assert(0);
 	}
@@ -132,17 +134,25 @@ void print_intercode(){
 			op3 = code->operate4.op3;
 			op4 = code->operate4.op4;
 		}
-		char *temp = NULL;
+		char *t1 = NULL, *t2 = NULL;
 		switch(code->kind){
+			case iLABEL:
+				assert(op1->kind == oLABEL);
+				sprintf(text, "LABEL %s :\n", op1->label);
+				break;
 			case iFUNC:
 				assert(op1->kind == FUNC_NAME);
 				sprintf(text, "FUNCTION %s :\n", op1->func_name);			
 				break;
+			case iGOTO:
+				assert(op1->kind == oLABEL);
+				sprintf(text, "GOTO %s\n", op1->label);
+				break;
 			case iRETURN:
 				assert(op1->kind == VARIABLE || is_constant(op1->kind));
-				temp = get_str(op1);
-				sprintf(text, "RETURN %s\n", temp);
-				free(temp);
+				t1 = get_str(op1);
+				sprintf(text, "RETURN %s\n", t1);
+				free(t1);
 				break;
 			case iPARAM:
 				assert(op1->kind == VARIABLE);
@@ -151,13 +161,21 @@ void print_intercode(){
 			case iASSIGN:
 				assert(op1->kind == VARIABLE);
 				assert(op2->kind == VARIABLE || is_constant(op2->kind));
-				temp = get_str(op2);
-				sprintf(text, "%s := %s\n", op1->var, temp);
-				free(temp);
+				t1 = get_str(op2);
+				sprintf(text, "%s := %s\n", op1->var, t1);
+				free(t1);
 				break;
 			case iDEC:
 				assert(op1->kind == VARIABLE && op2->kind == CONSTANT_INT);
 				sprintf(text, "DEC %s %d\n", op1->var, op2->intValue * WORD_LENGTH);
+				break;
+			case iREGOTO:
+				assert(op1->kind == VARIABLE || is_constant(op1->kind));
+				assert(op3->kind == VARIABLE || is_constant(op3->kind));
+				assert(op2->kind == oRELOP || op4->kind == oLABEL);
+				t1 = get_str(op1);
+				t2 = get_str(op3);
+				sprintf(text, "IF %s %s %s GOTO %s\n", t1, op2->relop, t2, op4->label);
 				break;
 			default:
 				printf("Print wrong type %d\n", code->kind);
