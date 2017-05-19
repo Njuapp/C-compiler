@@ -169,6 +169,18 @@ void print_intercode(){
 				assert(op1->kind == VARIABLE && op2->kind == CONSTANT_INT);
 				sprintf(text, "DEC %s %d\n", op1->var, op2->intValue * WORD_LENGTH);
 				break;
+			case iADD:
+				sprintf(text, "%s := %s + %s\n", op1->var , get_str(op2), get_str(op3));
+				break;
+			case iSUB:
+				sprintf(text, "%s := %s - %s\n", op1->var , get_str(op2), get_str(op3));
+				break;
+			case iMUL:
+				sprintf(text, "%s := %s * %s\n", op1->var , get_str(op2), get_str(op3));
+				break;
+			case iDIV:
+				sprintf(text, "%s := %s / %s\n", op1->var , get_str(op2), get_str(op3));
+				break;
 			case iREGOTO:
 				assert(op1->kind == VARIABLE || is_constant(op1->kind));
 				assert(op3->kind == VARIABLE || is_constant(op3->kind));

@@ -121,11 +121,12 @@ make_helper(ExpRELOP){//Exp for relational operation such as <,>,=,etc.
 	}	
 }
 
-make_helper(ExpPMSD){ // exp for plus minus star div
+make_helper(ExpPLUS){ // exp for plus minus star div
 	switch(location){
 		case 1:
 			if(inh) return;
 			parent->typeinfo = node->typeinfo;
+			parent->place = node->place;
 			break;
 		case 2:
 			break;
@@ -135,8 +136,106 @@ make_helper(ExpPMSD){ // exp for plus minus star div
 			struct Type* rtype = node->typeinfo;
 			if(ltype->kind!=BASIC || !typeEqual(ltype, rtype))
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+
+			//intercode
+			char* temp = new_temp();
+			Operand op1 = new_operand(VARIABLE, 0, 0.0, temp);
+			Operand op2 = parent->place;
+			Operand op3 = node->place;
+			INIT_3_OP(OP3_OFF)
+			parent->place = op1;
 			break;
-		default:
+		default: 
+			assert(0);
+	}
+}
+
+make_helper(ExpMINUS){ // exp for plus minus star div
+	switch(location){
+		case 1:
+			if(inh) return;
+			parent->typeinfo = node->typeinfo;
+			parent->place = node->place;
+			break;
+		case 2:
+			break;
+		case 3:
+			if(inh) return;
+			struct Type* ltype = parent->typeinfo;
+			struct Type* rtype = node->typeinfo;
+			if(ltype->kind!=BASIC || !typeEqual(ltype, rtype))
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+			
+			//intercode
+			char* temp = new_temp();
+			Operand op1 = new_operand(VARIABLE, 0, 0.0, temp);
+			Operand op2 = parent->place;
+			Operand op3 = node->place;
+			INIT_3_OP(iSUB)
+			parent->place = op1;
+
+			break;
+		default: 
+			assert(0);
+	}
+}
+
+make_helper(ExpSTAR){ // exp for plus minus star div
+	switch(location){
+		case 1:
+			if(inh) return;
+			parent->typeinfo = node->typeinfo;
+			parent->place = node->place;
+			break;
+		case 2:
+			break;
+		case 3:
+			if(inh) return;
+			struct Type* ltype = parent->typeinfo;
+			struct Type* rtype = node->typeinfo;
+			if(ltype->kind!=BASIC || !typeEqual(ltype, rtype))
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+
+			//intercode
+			char* temp = new_temp();
+			Operand op1 = new_operand(VARIABLE, 0, 0.0, temp);
+			Operand op2 = parent->place;
+			Operand op3 = node->place;
+			INIT_3_OP(iMUL)
+			parent->place = op1;
+
+			break;
+		default: 
+			assert(0);
+	}
+}
+
+make_helper(ExpDIV){ // exp for plus minus star div
+	switch(location){
+		case 1:
+			if(inh) return;
+			parent->typeinfo = node->typeinfo;
+			parent->place = node->place;
+			break;
+		case 2:
+			break;
+		case 3:
+			if(inh) return;
+			struct Type* ltype = parent->typeinfo;
+			struct Type* rtype = node->typeinfo;
+			if(ltype->kind!=BASIC || !typeEqual(ltype, rtype))
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+
+			//intercode
+			char* temp = new_temp();
+			Operand op1 = new_operand(VARIABLE, 0, 0.0, temp);
+			Operand op2 = parent->place;
+			Operand op3 = node->place;
+			INIT_3_OP(iDIV)
+			parent->place = op1;
+
+			break;
+		default: 
 			assert(0);
 	}
 }
@@ -148,6 +247,7 @@ make_helper(ExpLP){ // exp for (exp)
 		case 2:
 			if(inh) return;
 			parent->typeinfo = node->typeinfo;
+			parent->place = node->place;
 			break;
 		case 3:
 			break;
@@ -165,6 +265,11 @@ make_helper(ExpUMINUS){ // exp for minus exp
 			if(node->typeinfo->kind != BASIC)
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 			parent->typeinfo = node->typeinfo;
+			Operand op1 = new_operand(VARIABLE, 0, 0.0, new_temp());
+			Operand op2 = new_operand(CONSTANT_INT, 0, 0.0, NULL);
+			Operand op3 = node->place;
+			INIT_3_OP(iSUB)
+			parent->place = op1;
 			break;
 		default:
 			assert(0);
@@ -347,14 +452,7 @@ make_helper(ExpFLOAT){
 	}
 	else{
 		//intercode
-		Operand op1 = parent->place;
-		if(op1){
-			Operand op2 = new_operand(CONSTANT_FLOAT, 0, node->flt, NULL);
-			InterCode code = new_intercode(iASSIGN);
-			code->operate2.op1 = op1;
-			code->operate2.op2 = op2;
-			addCode(code, context);
-		}
+		parent->place = new_operand(CONSTANT_FLOAT, 0, node->flt, NULL);
 	}
 }
 
