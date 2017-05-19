@@ -5,6 +5,27 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
+
+#define OTHER_CASES if(parent->isBoolOrValue){ \
+			assert(parent->label_true && parent->label_false); \
+			Operand op1, op2, op3, op4; \
+			op1 = parent->place; \
+			op2 = new_operand(oRELOP, 0, 0.0, "!="); \
+			op3 = new_operand(CONSTANT_INT, 0, 0.0, NULL); \
+			op4 = parent->label_true; \
+			InterCode code = new_intercode(iREGOTO); \
+			code->operate4.op1 = op1; \
+			code->operate4.op2 = op2; \
+			code->operate4.op3 = op3; \
+			code->operate4.op4 = op4; \
+			addCode(code, context); \
+			op1 = parent->label_false; \
+			code = new_intercode(iGOTO); \
+			code->operate1.op = op1; \
+			addCode(code, context); \
+		}
+
+
 make_helper(ExpASSIGNExp){
 	switch(location){
 		case 1:
@@ -18,13 +39,18 @@ make_helper(ExpASSIGNExp){
 		case 2:
 		break;
 		case 3:
-		if(inh)return;
+		if(inh){
+			node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+			return;
+		}
 		if(!typeEqual(parent->typeinfo, node->typeinfo))
 			printf("Error type 5 at Line %d: Type mismatched for assignment.\n",node->line);
 		InterCode code = new_intercode(iASSIGN);
 		code->operate2.op1 = parent->place;
 		code->operate2.op2 = node->place;
 		addCode(code, context);
+		
+		OTHER_CASES;
 		break;
 		default:
 		assert(0);
@@ -193,17 +219,23 @@ make_helper(ExpRELOP){//Exp for relational operation such as <,>,=,etc.
 	}	
 }
 
-make_helper(ExpPLUS){ // exp for plus minus star div
+make_helper(ExpPLUS){ // exp for plus minus star div 
 	switch(location){
 		case 1:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			parent->typeinfo = node->typeinfo;
 			parent->place = node->place;
 			break;
 		case 2:
 			break;
 		case 3:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			struct Type* ltype = parent->typeinfo;
 			struct Type* rtype = node->typeinfo;
 			if(ltype->kind!=BASIC || !typeEqual(ltype, rtype))
@@ -214,8 +246,10 @@ make_helper(ExpPLUS){ // exp for plus minus star div
 			Operand op1 = new_operand(VARIABLE, 0, 0.0, temp);
 			Operand op2 = parent->place;
 			Operand op3 = node->place;
-			INIT_3_OP(OP3_OFF)
+			INIT_3_OP(iADD)
 			parent->place = op1;
+
+			OTHER_CASES;
 			break;
 		default: 
 			assert(0);
@@ -225,14 +259,20 @@ make_helper(ExpPLUS){ // exp for plus minus star div
 make_helper(ExpMINUS){ // exp for plus minus star div
 	switch(location){
 		case 1:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			parent->typeinfo = node->typeinfo;
 			parent->place = node->place;
 			break;
 		case 2:
 			break;
 		case 3:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			struct Type* ltype = parent->typeinfo;
 			struct Type* rtype = node->typeinfo;
 			if(ltype->kind!=BASIC || !typeEqual(ltype, rtype))
@@ -246,6 +286,7 @@ make_helper(ExpMINUS){ // exp for plus minus star div
 			INIT_3_OP(iSUB)
 			parent->place = op1;
 
+			OTHER_CASES;
 			break;
 		default: 
 			assert(0);
@@ -255,14 +296,20 @@ make_helper(ExpMINUS){ // exp for plus minus star div
 make_helper(ExpSTAR){ // exp for plus minus star div
 	switch(location){
 		case 1:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			parent->typeinfo = node->typeinfo;
 			parent->place = node->place;
 			break;
 		case 2:
 			break;
 		case 3:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			struct Type* ltype = parent->typeinfo;
 			struct Type* rtype = node->typeinfo;
 			if(ltype->kind!=BASIC || !typeEqual(ltype, rtype))
@@ -276,6 +323,7 @@ make_helper(ExpSTAR){ // exp for plus minus star div
 			INIT_3_OP(iMUL)
 			parent->place = op1;
 
+			OTHER_CASES;
 			break;
 		default: 
 			assert(0);
@@ -285,14 +333,20 @@ make_helper(ExpSTAR){ // exp for plus minus star div
 make_helper(ExpDIV){ // exp for plus minus star div
 	switch(location){
 		case 1:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			parent->typeinfo = node->typeinfo;
 			parent->place = node->place;
 			break;
 		case 2:
 			break;
 		case 3:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			struct Type* ltype = parent->typeinfo;
 			struct Type* rtype = node->typeinfo;
 			if(ltype->kind!=BASIC || !typeEqual(ltype, rtype))
@@ -306,6 +360,7 @@ make_helper(ExpDIV){ // exp for plus minus star div
 			INIT_3_OP(iDIV)
 			parent->place = op1;
 
+			OTHER_CASES;
 			break;
 		default: 
 			assert(0);
@@ -321,10 +376,12 @@ make_helper(ExpLP){ // exp for (exp)
 				node->isBoolOrValue = parent->isBoolOrValue;
 				node->label_true = parent->label_true;
 				node->label_false = parent->label_false;
+				node->place = parent->place;
 				return;
 			}
 			parent->typeinfo = node->typeinfo;
 			parent->place = node->place;
+
 			break;
 		case 3:
 			break;
@@ -338,7 +395,10 @@ make_helper(ExpUMINUS){ // exp for minus exp
 		case 1:
 			break;
 		case 2:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+			   	return;
+			}
 			if(node->typeinfo->kind != BASIC)
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 			parent->typeinfo = node->typeinfo;
@@ -347,6 +407,8 @@ make_helper(ExpUMINUS){ // exp for minus exp
 			Operand op3 = node->place;
 			INIT_3_OP(iSUB)
 			parent->place = op1;
+
+			OTHER_CASES;
 			break;
 		default:
 			assert(0);
@@ -440,7 +502,13 @@ make_helper(ExpFunc1){
 			}
 			if(p1 || p2)
 				printf("Error type 9 at Line %d: Function is not applicable for arguments.\n",node->line);
+			//Intercode
+			Operand op1 = new_operand(VARIABLE, 0, 0.0, new_temp());
+			Operand op2 = new_operand(FUNC_NAME, 0, 0.0, name);
+			INIT_2_OP(iCALL)
+			parent->place = op1;
 
+			OTHER_CASES;
 			break;
 		case 4:
 			break;
@@ -464,7 +532,12 @@ make_helper(ExpFunc2){
 					printf("Error type 9 at Line %d: Function is not applicable for arguments.\n",node->line);
 				parent->typeinfo = func->rettype;
 			}
+			Operand op1 = new_operand(VARIABLE, 0, 0.0, new_temp());
+			Operand op2 = new_operand(FUNC_NAME, 0, 0.0, name);
+			INIT_2_OP(iCALL)
+			parent->place = op1;
 
+			OTHER_CASES;
 			break;
 		case 2:
 			break;
@@ -491,6 +564,8 @@ make_helper(ExpArray){
 				if(!typeEqual(node->typeinfo, INT))
 					printf("Error type 12 at Line %d: The exp is not a integer.\n",node->line);
 			}
+
+			OTHER_CASES;
 			break;
 		case 4:
 			break;
@@ -538,6 +613,7 @@ make_helper(ExpID){
 		parent->isLeft = 1;
 
 		//intercode
+		if(parent->place) free(parent->place);
 		parent->place = var->temp_name;
 
 		/*
@@ -549,6 +625,7 @@ make_helper(ExpID){
 			addCode(code, context);
 		}
 		*/
+		OTHER_CASES;
 	}
 }
 
@@ -559,7 +636,10 @@ make_helper(ExpINT){
 	}
 	else{
 		//intercode
+		if(parent->place) free(parent->place);
 		parent->place = new_operand(CONSTANT_INT, node->intgr, 0.0, NULL);
+
+		OTHER_CASES;
 	}
 }
 
@@ -570,7 +650,10 @@ make_helper(ExpFLOAT){
 	}
 	else{
 		//intercode
+		if(parent->place) free(parent->place);
 		parent->place = new_operand(CONSTANT_FLOAT, 0, node->flt, NULL);
+	
+		OTHER_CASES;
 	}
 }
 
