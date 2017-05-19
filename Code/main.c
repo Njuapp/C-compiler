@@ -18,6 +18,8 @@ int main(int argc, char** argv) {
 		yyparse();
 		//eval(root,0);
 		fclose(f);
+
+		print_intercode();
 	}
 	return 0;
 }

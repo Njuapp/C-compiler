@@ -1,5 +1,6 @@
 #ifndef _GRAMMAR_TREE_H_
 #define _GRAMMAR_TREE_H_
+#include "intercode.h"
 extern int yylineno;
 extern char* yytext;
 void yyerror(char *s,...);
@@ -20,6 +21,11 @@ struct GrammerTree{
 
 	char* typeName;
 	struct FieldList * stru;
+
+	// intermediate code on
+	Operand place;
+	int isParam;
+	// intermediate code off
 
 	union{
 		char* idtype;

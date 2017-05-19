@@ -38,11 +38,14 @@ void sdt(struct GrammerTree* Program){
 
 void SDT(struct GrammerTree* node, struct GrammerTree* parent, int location){
 	if(!node)return;
+//	printf("%s %s %d start\n", node->name, parent->name, location);
 	int prod = parent->prod;
 	semantics[prod](node, parent, location ,1);// node inherits something from left nodes or parent
 	SDT(node->l, node, 1);
+//	printf("%s %s %d middle\n", node->name, parent->name, location);
 	semantics[prod](node, parent, location ,0);// parent synthesizes something from child node
 	SDT(node->r, parent, location + 1);
+//	printf("%s %s %d end\n", node->name, parent->name, location);
 }
 
 make_helper(inv){
@@ -263,7 +266,16 @@ make_helper(VarDec1){
 		if(var || struType)
 			printf("Error type 3 at Line %d: Redefined variable \"%s\".\n",node->line,node->idtype);
 		else{
-			addVar(node->idtype, parent->typeinfo);
+			//intercode
+			char *temp = new_var();
+			addVar(node->idtype, parent->typeinfo, temp);
+			if(parent->isParam){
+				Operand var = new_operand(VARIABLE, 0, 0.0, temp);
+				InterCode code = new_intercode(iPARAM);
+				code->u.operate1.op = var;
+				addCode(code, context);
+			}
+
 			parent->arrayname = node->idtype;
 		}
 	}
@@ -276,6 +288,9 @@ make_helper(VarDec2){
 				node->typeinfo = parent->typeinfo;
 				node->stru = parent->stru;
 				node->tag = parent->tag;
+
+				//intercode
+				node->isParam = parent->isParam;
 			}
 			else{
 				parent->stru = node->stru;

@@ -7,7 +7,7 @@ int structEqual(struct Type* left, struct Type* right);
 int typeEqual(struct Type* left, struct Type* right);
 int arrayEqual(struct Type* left, struct Type* right);
 int structEqual(struct Type* left, struct Type* right);
-void addVar(char* varname, struct Type* typeinfo);
+void addVar(char* varname, struct Type* typeinfo, char* tempname);
 struct Var* findVar(char* varname);
 struct Func* findFunc(char *funcname);
 void addFunc(char* funcname, struct Type* typeinfo);

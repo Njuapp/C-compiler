@@ -50,12 +50,13 @@ int structEqual(struct Type* left, struct Type* right){
 		return 0;
 	return 1;
 }
-void addVar(char* varname, struct Type* typeinfo){
+void addVar(char* varname, struct Type* typeinfo, char* tempname){
 	unsigned int h = hash_pjw(varname);
 	struct Var* nwnode = (struct Var*)malloc(sizeof(struct Var));
 	nwnode->name = (char*)malloc(sizeof(char)*NAME_MAX_LENGTH);
 	strcpy(nwnode->name, varname);
 	nwnode->type = typeinfo;
+	nwnode->temp = tempname;
 	nwnode->next = varTable[h];
 	varTable[h] = nwnode;
 }

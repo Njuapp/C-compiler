@@ -17,6 +17,12 @@ make_helper(FunDec1){
 				parent->funcname = node->idtype;
 			}
 
+			// intercode
+			Operand name = new_operand(FUNC_NAME, 0, 0.0, node->idtype);
+			InterCode code = new_intercode(iFUNC);
+			code->u.operate1.op = name;
+			addCode(code, context);
+
 			break;
 		case 2:
 			break;
@@ -36,6 +42,7 @@ make_helper(FunDec1){
 					p=p->next;
 				}
 				func->numOfParams = count;
+		
 			}
 			break;
 		case 4:
@@ -54,6 +61,12 @@ make_helper(FunDec2){
 		else
 			addFunc(node->idtype, parent->typeinfo);
 		parent->funcname = node->idtype;
+		
+		// intercode
+		Operand name = new_operand(FUNC_NAME, 0, 0.0, node->idtype);
+		InterCode code = new_intercode(iFUNC);
+		code->u.operate1.op = name;
+		addCode(code, context);
 	}
 }
 
@@ -81,6 +94,7 @@ make_helper(ParamDec){
 		case 2:
 			if(inh){
 				node->typeinfo = parent->typeinfo;
+				node->isParam = 1;
 			}
 			else{
 				struct Param* param = (struct Param*)malloc(sizeof(struct Param));

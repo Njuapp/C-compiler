@@ -1,6 +1,7 @@
 #ifndef _SEMANTIC_H_
 #define _SEMANTIC_H_
 #include "grammar_tree.h"
+#include "intercode.h"
 #define make_helper(name) void name(struct GrammerTree* node, struct GrammerTree* parent, int location, int inh)
 typedef void (*helper_fun)(struct GrammerTree*, struct GrammerTree*, int,int);
 #define NOSTRU 0
@@ -18,6 +19,9 @@ struct Type{
 struct Var{
 	char* name;
 	struct Type* type;
+
+	char* temp; //intercode
+
 	struct Var* next;
 };
 
