@@ -23,6 +23,9 @@ Operand new_operand(int kind, int intValue, float floatValue, char* name){
 		case FUNC_NAME:
 			target->func_name = name;
 			break;
+		case ADDRESS:
+			target->addr = name;
+			break;
 		default:
 			assert(0);
 	}
@@ -91,10 +94,10 @@ char* get_str(Operand op){
 		sprintf(text, "%s", op->var);
 	else if(op->kind == CONSTANT_INT)
 		sprintf(text, "#%d", op->intValue);
-	else if (op->kind == CONSTANT_FLOAT)
+	else if(op->kind == CONSTANT_FLOAT)
 		sprintf(text, "#%f", op->floatValue);
-	else
-		sprintf(text, "%s", op->func_name);
+	else if(op->kind == FUNC_NAME)
+		sprintf();
 	return text;
 }
 

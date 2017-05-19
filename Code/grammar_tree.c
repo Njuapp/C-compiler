@@ -27,6 +27,7 @@ struct GrammerTree * create(char* name, int prod, int num, ...){
 	//intercode
 	a->isParam = 0;
 	a->place = NULL;
+	a->isBoolOrValue = 0;
 	
 	va_start(valist, num);
 	struct GrammerTree * temp = (struct GrammerTree*)malloc(sizeof(struct GrammerTree));

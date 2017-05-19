@@ -25,6 +25,9 @@ struct GrammerTree{
 	// intermediate code on
 	Operand place;
 	int isParam;
+	int isBoolOrValue;
+	char* label_true;
+	char* label_false;
 	// intermediate code off
 
 	union{

@@ -24,6 +24,9 @@ make_helper(Stmt2){
 	if(inh){
 		node->funcname = parent->funcname;
 	}
+	else{
+		//TODO: some optimize ?
+	}
 }
 
 make_helper(Stmt3){
