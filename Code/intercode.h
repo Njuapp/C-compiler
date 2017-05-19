@@ -56,13 +56,17 @@ char* new_temp();
 char* new_label();
 char* new_var();
 
-#define INIT_3_OP \
+#define INIT_3_OP(KIND) \
+	InterCode code = new_intercode(KIND); \
 	code->operate3.op1 = op1;\
 	code->operate3.op2 = op2;\
-	code->operate3.op3 = op3;
+	code->operate3.op3 = op3;\
+	addCode(code, context);
 
-#define INIT_2_OP \
+#define INIT_2_OP(KIND) \
+	InterCode code = new_intercode(KIND);\
 	code->operate2.op1 = op1;\
-	code->operate2.op2 = op2;
+	code->operate2.op2 = op2;\
+	addCode(code, context);
 
 #endif

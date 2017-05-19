@@ -91,13 +91,11 @@ make_helper(ExpPLUS){ // exp for plus minus star div
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 
 			//intercode
-			InterCode code = new_intercode(OP3_OFF);
 			char* temp = new_temp();
 			Operand op1 = new_operand(VARIABLE, 0, 0.0, temp);
 			Operand op2 = parent->place;
 			Operand op3 = node->place;
-			INIT_3_OP
-			addCode(code,  context);
+			INIT_3_OP(OP3_OFF)
 			parent->place = op1;
 			break;
 		default: 
@@ -122,13 +120,11 @@ make_helper(ExpMINUS){ // exp for plus minus star div
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 			
 			//intercode
-			InterCode code = new_intercode(iSUB);
 			char* temp = new_temp();
 			Operand op1 = new_operand(VARIABLE, 0, 0.0, temp);
 			Operand op2 = parent->place;
 			Operand op3 = node->place;
-			INIT_3_OP
-			addCode(code,  context);
+			INIT_3_OP(iSUB)
 			parent->place = op1;
 
 			break;
@@ -154,13 +150,11 @@ make_helper(ExpSTAR){ // exp for plus minus star div
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 
 			//intercode
-			InterCode code = new_intercode(iMUL);
 			char* temp = new_temp();
 			Operand op1 = new_operand(VARIABLE, 0, 0.0, temp);
 			Operand op2 = parent->place;
 			Operand op3 = node->place;
-			INIT_3_OP
-			addCode(code,  context);
+			INIT_3_OP(iMUL)
 			parent->place = op1;
 
 			break;
@@ -186,13 +180,11 @@ make_helper(ExpDIV){ // exp for plus minus star div
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 
 			//intercode
-			InterCode code = new_intercode(iDIV);
 			char* temp = new_temp();
 			Operand op1 = new_operand(VARIABLE, 0, 0.0, temp);
 			Operand op2 = parent->place;
 			Operand op3 = node->place;
-			INIT_3_OP
-			addCode(code,  context);
+			INIT_3_OP(iDIV)
 			parent->place = op1;
 
 			break;
@@ -208,6 +200,7 @@ make_helper(ExpLP){ // exp for (exp)
 		case 2:
 			if(inh) return;
 			parent->typeinfo = node->typeinfo;
+			parent->place = node->place;
 			break;
 		case 3:
 			break;
@@ -225,6 +218,11 @@ make_helper(ExpUMINUS){ // exp for minus exp
 			if(node->typeinfo->kind != BASIC)
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 			parent->typeinfo = node->typeinfo;
+			Operand op1 = new_operand(VARIABLE, 0, 0.0, new_temp());
+			Operand op2 = new_operand(CONSTANT_INT, 0, 0.0, NULL);
+			Operand op3 = node->place;
+			INIT_3_OP(iSUB)
+			parent->place = op1;
 			break;
 		default:
 			assert(0);
