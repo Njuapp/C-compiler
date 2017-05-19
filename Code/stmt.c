@@ -101,9 +101,9 @@ make_helper(Stmt4){
 }
 
 make_helper(Stmt5){
-	static Operand label1 = NULL;
-	static Operand label2 = NULL;
-	static Operand label3 = NULL;
+	Operand label1 = NULL;
+	Operand label2 = NULL;
+	Operand label3 = NULL;
 	Operand op = NULL;
 	InterCode code = NULL;
 	switch(location){
@@ -114,6 +114,9 @@ make_helper(Stmt5){
 				label1 = new_operand(oLABEL, 0, 0.0, new_label());
 				label2 = new_operand(oLABEL, 0, 0.0, new_label());
 				label3 = new_operand(oLABEL, 0, 0.0, new_label());
+				parent->label_true = label1;
+				parent->label_false = label2;
+				parent->label3 = label3;
 				node->label_true = label1;
 				node->label_false = label2;
 				node->isBoolOrValue = 1;
@@ -122,7 +125,7 @@ make_helper(Stmt5){
 			if(!typeEqual(node->typeinfo, findType("int")))
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 			
-			op = label1;
+			op = parent->label_true;
 			code = new_intercode(iLABEL);
 			code->operate1.op = op;
 			addCode(code, context);
@@ -132,12 +135,12 @@ make_helper(Stmt5){
 				node->funcname = parent->funcname;
 				return;
 			}
-			op = label3;
+			op = parent->label3;
 			code = new_intercode(iGOTO);
 			code->operate1.op = op;
 			addCode(code, context);
 
-			op = label2;
+			op = parent->label_false;
 			code = new_intercode(iLABEL);
 			code->operate1.op = op;
 			addCode(code, context);
@@ -147,7 +150,7 @@ make_helper(Stmt5){
 				node->funcname = parent->funcname;
 				return;
 			}
-			op = label3;
+			op = parent->label3;
 			code = new_intercode(iLABEL);
 			code->operate1.op = op;
 			addCode(code, context);
@@ -159,9 +162,9 @@ make_helper(Stmt5){
 }
 
 make_helper(Stmt6){
-	static Operand label1 = NULL;
-	static Operand label2 = NULL;	
-	static Operand label3 = NULL;
+	Operand label1 = NULL;
+	Operand label2 = NULL;	
+	Operand label3 = NULL;
 	Operand op;
 	InterCode code;
 	switch(location){
@@ -172,6 +175,9 @@ make_helper(Stmt6){
 				label1 = new_operand(oLABEL, 0, 0.0, new_label());
 				label2 = new_operand(oLABEL, 0, 0.0, new_label());
 				label3 = new_operand(oLABEL, 0, 0.0, new_label());
+				parent->label_true = label1;
+				parent->label_false = label2;
+				parent->label3 = label3;
 				op = label1;
 				code = new_intercode(iLABEL);
 				code->operate1.op = op;
@@ -184,7 +190,7 @@ make_helper(Stmt6){
 			if(!typeEqual(node->typeinfo, findType("int")))
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 	
-			op = label2;
+			op = parent->label_false;
 			code = new_intercode(iLABEL);
 			code->operate1.op = op;
 			addCode(code, context);
@@ -195,12 +201,12 @@ make_helper(Stmt6){
 				return;
 			}
 
-			op = label1;
+			op = parent->label_true;
 			code = new_intercode(iGOTO);
 			code->operate1.op = op;
 			addCode(code, context);
 
-			op = label3;
+			op = parent->label3;
 			code = new_intercode(iLABEL);
 			code->operate1.op = op;
 			addCode(code, context);
