@@ -165,6 +165,12 @@ void print_intercode(){
 				sprintf(text, "%s := %s\n", op1->var, t1);
 				free(t1);
 				break;
+			case iWRITE:
+				sprintf(text, "WRITE %s\n", get_str(op1));
+				break;
+			case iREAD:
+				sprintf(text, "READ %s\n", get_str(op1));
+				break;
 			case iCALL:
 				assert(op2->kind == FUNC_NAME);
 				sprintf(text, "%s := CALL %s\n", op1->var, get_str(op2));

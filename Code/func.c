@@ -134,22 +134,35 @@ make_helper(VarList2){
 	}
 }
 
+void addArg(struct GrammerTree* node, Operand arg){
+	Operands nwnode = (Operands)malloc(sizeof(struct Operands_));
+	nwnode->next = node->paramlist;
+	nwnode->param = arg;
+	node->paramlist = nwnode;
+}
+
 make_helper(Args1){
 	switch(location){
 		case 1:
-			if(inh) return;
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+				return;
+			}
 			struct Param* param = (struct Param*)malloc(sizeof(struct Param));
 			param->type = node->typeinfo;
 			param->next = NULL;
 			addParam(parent, param);
-			Operand op1 = node->place;
-			INIT_1_OP(iARG)
+			addArg(parent, node->place);
 			break;
 		case 2:
 			break;
 		case 3:
-			if(inh) return;
+			if(inh){
+				node->paramlist = parent->paramlist;
+				return;
+			}
 			addParam(parent, node->param);
+			parent->paramlist = node->paramlist;
 			break;
 		default:
 			assert(0);
@@ -158,12 +171,14 @@ make_helper(Args1){
 
 make_helper(Args2){
 	assert(location == 1);
-	if(inh) return;
+	if(inh){
+		node->place = new_operand(VARIABLE, 0, 0.0, new_temp());
+		return;
+	}
 	struct Param* param = (struct Param*)malloc(sizeof(struct Param));
 	param->type = node->typeinfo;
 	param->next = NULL;
-	Operand op1 = node->place;
-	INIT_1_OP(iARG)
 	addParam(parent, param);
+	addArg(parent, node->place);
 }
 

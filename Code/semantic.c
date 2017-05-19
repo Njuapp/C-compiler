@@ -32,6 +32,8 @@ void sdt(struct GrammerTree* Program){
 	//把内置的基本类型int和float放入类型表里面
 	addBasicType("int");
 	addBasicType("float");
+	addFunc("read",findType("int"));
+	addFunc("write",findType("int"));
 	addStruType(0,"INCOMPLETE STRUCT");
 	SDT(Program->l, Program, 1);
 }

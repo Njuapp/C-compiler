@@ -94,6 +94,13 @@ void addFunc(char* funcname, struct Type* typeinfo){
 	nwnode->rettype = typeinfo;
 	nwnode->numOfParams = 0;
 	nwnode->head = NULL;
+	if(!strcmp(funcname, "write")){
+		nwnode->numOfParams = 1;
+		struct Param* p = (struct Param*)malloc(sizeof(struct Param));
+		p->next = NULL;
+		p->type = typeinfo;
+		nwnode->head = p;
+	}
 	nwnode->next = funcTable[h];
 	funcTable[h] = nwnode;
 }

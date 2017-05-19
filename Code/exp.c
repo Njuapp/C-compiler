@@ -50,7 +50,7 @@ make_helper(ExpASSIGNExp){
 		code->operate2.op2 = node->place;
 		addCode(code, context);
 		
-		OTHER_CASES;
+		OTHER_CASES
 		break;
 		default:
 		assert(0);
@@ -249,7 +249,7 @@ make_helper(ExpPLUS){ // exp for plus minus star div
 			INIT_3_OP(iADD)
 			parent->place = op1;
 
-			OTHER_CASES;
+			OTHER_CASES
 			break;
 		default: 
 			assert(0);
@@ -286,7 +286,7 @@ make_helper(ExpMINUS){ // exp for plus minus star div
 			INIT_3_OP(iSUB)
 			parent->place = op1;
 
-			OTHER_CASES;
+			OTHER_CASES
 			break;
 		default: 
 			assert(0);
@@ -323,7 +323,7 @@ make_helper(ExpSTAR){ // exp for plus minus star div
 			INIT_3_OP(iMUL)
 			parent->place = op1;
 
-			OTHER_CASES;
+			OTHER_CASES
 			break;
 		default: 
 			assert(0);
@@ -360,7 +360,7 @@ make_helper(ExpDIV){ // exp for plus minus star div
 			INIT_3_OP(iDIV)
 			parent->place = op1;
 
-			OTHER_CASES;
+			OTHER_CASES
 			break;
 		default: 
 			assert(0);
@@ -408,7 +408,7 @@ make_helper(ExpUMINUS){ // exp for minus exp
 			INIT_3_OP(iSUB)
 			parent->place = op1;
 
-			OTHER_CASES;
+			OTHER_CASES
 			break;
 		default:
 			assert(0);
@@ -491,7 +491,10 @@ make_helper(ExpFunc1){
 		case 2:
 			break;
 		case 3:
-			if(inh) return;
+			if(inh){
+				node->paramlist = NULL;
+				return;
+			}
 			char* name = parent->funcname;
 			if(!name) return;
 			struct Func* func = findFunc(name);
@@ -502,13 +505,27 @@ make_helper(ExpFunc1){
 			}
 			if(p1 || p2)
 				printf("Error type 9 at Line %d: Function is not applicable for arguments.\n",node->line);
+
+
 			//Intercode
+			if(!strcmp(name,"write")){
+				Operand op1 = node->paramlist->param;
+				INIT_1_OP(iWRITE)
+				parent->place = op1;
+				OTHER_CASES
+				return;
+			}
+			Operands q = node->paramlist;
+			for(; q; q = q->next){
+				Operand op1 = q->param;
+				INIT_1_OP(iARG)
+			}
 			Operand op1 = new_operand(VARIABLE, 0, 0.0, new_temp());
 			Operand op2 = new_operand(FUNC_NAME, 0, 0.0, name);
 			INIT_2_OP(iCALL)
 			parent->place = op1;
 
-			OTHER_CASES;
+			OTHER_CASES
 			break;
 		case 4:
 			break;
@@ -532,12 +549,21 @@ make_helper(ExpFunc2){
 					printf("Error type 9 at Line %d: Function is not applicable for arguments.\n",node->line);
 				parent->typeinfo = func->rettype;
 			}
+
+			//Inter code
+			if(!strcmp(name, "read")){
+				Operand op1 = new_operand(VARIABLE,0,0.0,new_temp());
+				INIT_1_OP(iREAD);
+				parent->place = op1;
+				OTHER_CASES
+				return;
+			}
 			Operand op1 = new_operand(VARIABLE, 0, 0.0, new_temp());
 			Operand op2 = new_operand(FUNC_NAME, 0, 0.0, name);
 			INIT_2_OP(iCALL)
 			parent->place = op1;
 
-			OTHER_CASES;
+			OTHER_CASES
 			break;
 		case 2:
 			break;

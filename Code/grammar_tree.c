@@ -30,7 +30,7 @@ struct GrammerTree * create(char* name, int prod, int num, ...){
 	a->isBoolOrValue = 0;
 	a->label_true = NULL;
 	a->label_false = NULL;
-	
+	a->paramlist = NULL;	
 	va_start(valist, num);
 	struct GrammerTree * temp = (struct GrammerTree*)malloc(sizeof(struct GrammerTree));
 	if(num > 0){
