@@ -66,9 +66,8 @@ make_helper(ExpASSIGNExp){
 	}
 }
 
-make_helper(ExpBOOL){ // exp for bool
-	static Operand relop = NULL;
-	static Operand label = NULL;
+make_helper(ExpAND){ // exp for bool
+	Operand label = NULL;
 	switch(location){
 		case 1:
 			if(inh){
@@ -89,6 +88,7 @@ make_helper(ExpBOOL){ // exp for bool
 				node->label_true = label;
 				node->label_false = parent->label_false;
 				node->isBoolOrValue = 1;
+				parent->label3 = label;
 				return;
 			}
 			if(!typeEqual(node->typeinfo, findType("int")))
@@ -97,8 +97,7 @@ make_helper(ExpBOOL){ // exp for bool
 			break;
 		case 2:
 			if(!inh){
-				relop = new_operand(oRELOP, 0, 0.0, node->idtype);
-				Operand op = label;
+				Operand op = parent->label3;
 				InterCode code = new_intercode(iLABEL);
 				code->operate1.op = op;
 				addCode(code, context);		
@@ -143,10 +142,88 @@ make_helper(ExpBOOL){ // exp for bool
 	}
 }
 
+make_helper(ExpOR){ // exp for bool
+	Operand label = NULL;
+	switch(location){
+		case 1:
+			if(inh){
+				//intercode
+				if(!parent->isBoolOrValue){
+					Operand label1 = new_operand(oLABEL, 0, 0.0, new_label());
+					parent->label_true = label1;
+					Operand label2 = new_operand(oLABEL, 0, 0.0, new_label());
+					parent->label_false = label2;
+					Operand op1 = parent->place;
+					Operand op2 = new_operand(CONSTANT_INT, 0, 0.0, NULL);
+					InterCode code = new_intercode(iASSIGN);
+					code->operate2.op1 = op1;
+					code->operate2.op2 = op2;
+					addCode(code, context);
+				}
+				label = new_operand(oLABEL, 0, 0.0, new_label());
+				node->label_true = parent->label_true;
+				node->label_false = label;
+				node->isBoolOrValue = 1;
+				parent->label3 = label;
+				return;
+			}
+			if(!typeEqual(node->typeinfo, findType("int")))
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+
+			break;
+		case 2:
+			if(!inh){
+				Operand op = parent->label3;
+				InterCode code = new_intercode(iLABEL);
+				code->operate1.op = op;
+				addCode(code, context);		
+			}
+			break;
+		case 3:
+			if(inh){
+				//intercode
+				node->label_true = parent->label_true;
+				node->label_false = parent->label_false;
+				node->isBoolOrValue = 1;
+			   	return;
+			}
+			if(!typeEqual(node->typeinfo, findType("int")))
+				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
+			else
+				parent->typeinfo = node->typeinfo;
+			
+			//intercode
+			if(!parent->isBoolOrValue){
+				Operand op1 = parent->label_true;
+				InterCode code = new_intercode(iLABEL);
+				code->operate1.op = op1;
+				addCode(code, context);
+				
+				op1 = parent->place;
+				Operand op2 = new_operand(CONSTANT_INT, 1, 0.0, NULL);
+				code = new_intercode(iASSIGN);
+				code->operate2.op1 = op1;
+				code->operate2.op2 = op2;
+				addCode(code, context);
+
+				op1 = parent->label_false;
+				code = new_intercode(iLABEL);
+				code->operate1.op = op1;
+				addCode(code, context);
+			}
+			break;
+
+		default:
+			assert(0);
+	}
+}
+
+
+
 make_helper(ExpRELOP){//Exp for relational operation such as <,>,=,etc.
-	static Operand t1 = NULL;
-	static Operand t2 = NULL;
-	static Operand relop = NULL;
+	Operand t1 = NULL;
+	Operand t2 = NULL;
+	Operand relop = NULL;
 	switch(location){
 		case 1:
 			if(inh){
@@ -165,17 +242,18 @@ make_helper(ExpRELOP){//Exp for relational operation such as <,>,=,etc.
 				}
 				t1 = new_operand(VARIABLE, 0, 0.0, new_temp());
 				node->place = t1;
+				parent->t1 = t1;
 				return;
 			}
 			parent->typeinfo = node->typeinfo;
 		
 			//intercode
-			t1 = node->place;
+			parent->t1 = node->place;
 			break;
 		case 2:
 			if(!inh){
 				//intercode
-				relop = new_operand(oRELOP, 0, 0.0, node->idtype);		
+				parent->relop = new_operand(oRELOP, 0, 0.0, node->idtype);		
 			}
 			break;
 		case 3:
@@ -183,6 +261,7 @@ make_helper(ExpRELOP){//Exp for relational operation such as <,>,=,etc.
 				//intercode
 				t2 = new_operand(VARIABLE, 0, 0.0, new_temp());
 				node->place = t2;
+				parent->t2 = t2;
 			   	return;
 			}
 			struct Type* ltype = parent->typeinfo;
@@ -193,11 +272,11 @@ make_helper(ExpRELOP){//Exp for relational operation such as <,>,=,etc.
 				parent->typeinfo = findType("int");
 
 			//intercode
-			t2 = node->place;
+			parent->t2 = node->place;
 			InterCode code = new_intercode(iREGOTO);
-			code->operate4.op1 = t1;
-			code->operate4.op2 = relop;
-			code->operate4.op3 = t2;
+			code->operate4.op1 = parent->t1;
+			code->operate4.op2 = parent->relop;
+			code->operate4.op3 = parent->t2;
 			code->operate4.op4 = parent->label_true;
 			addCode(code, context);
 

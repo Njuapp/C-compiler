@@ -19,7 +19,7 @@ helper_fun semantics [64]={
 	//32-47
 	DefList1, inv, Def, DecList1,
 	DecList2, Dec1, Dec2, ExpASSIGNExp,
-	ExpBOOL, ExpBOOL, ExpRELOP, ExpPLUS,
+	ExpAND, ExpOR, ExpRELOP, ExpPLUS,
 	ExpMINUS, ExpSTAR, ExpDIV, ExpLP,
 	//48-63
 	ExpUMINUS, ExpNOT, ExpFunc1, ExpFunc2,

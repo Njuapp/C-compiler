@@ -30,8 +30,12 @@ struct GrammerTree{
 	Operand place;
 	int isParam;
 	int isBoolOrValue;
+	Operand t1;
+	Operand t2;
+	Operand relop;
 	Operand label_true;
 	Operand label_false;
+	Operand label3;
 	Operands paramlist;	
 	int leftside;
 	// intermediate code off
