@@ -1,8 +1,4 @@
 #include "intercode.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <assert.h>
-
 #define STRING_LENGTH 20
 
 InterCodes codeField, context;

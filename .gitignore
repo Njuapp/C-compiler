@@ -1,4 +1,5 @@
 *.cmm
+Test/
 *.o
 *.d
 *.l

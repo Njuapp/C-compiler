@@ -1,6 +1,12 @@
 #ifndef __INTERCODE_H__
 #define __INTERCODE_H__
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
+
+#define LABEL_MAX 10000
 #define WORD_LENGTH 4
 
 struct Operand_ {
