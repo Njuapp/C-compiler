@@ -369,6 +369,8 @@ make_helper(VarDec2){
 					else{*/
 					struct Var* var = findVar(parent->arrayname);
 					type = var->type;
+					if(parent->isParam)
+						var->temp_name->kind = ADDRESS;
 					struct Type* newdim = (struct Type*)malloc(sizeof(struct Type));
 					newdim->next = NULL;
 					newdim->typeName = "ARRAY";

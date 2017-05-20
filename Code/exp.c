@@ -691,11 +691,13 @@ make_helper(ExpArray){
 					op3 = new_operand(CONSTANT_INT, 4, 0, NULL);
 				INIT_3_OP(iMUL)
 				op3 = op1;
+				op1 = new_operand(ADDRESS, 0, 0, new_temp());
 				InterCode code2 = new_intercode(iADD);
-				code2->operate3.op1 = parent->place;
+				code2->operate3.op1 = op1;
 				code2->operate3.op2 = parent->place;
 				code2->operate3.op3 = op3;
 				addCode(code2, context);
+				parent->place = op1;
 				if(parent->typeinfo->kind != ARRAY && parent->leftside == 0){
 					InterCode code3 = new_intercode(iGET);
 					code3->operate2.op1 = new_operand(VARIABLE, 0, 0, new_temp());
@@ -754,7 +756,7 @@ make_helper(ExpID){
 
 		//intercode
 		if(parent->place) free(parent->place);
-		if(var->type->kind == ARRAY){
+		if(var->type->kind == ARRAY && var->temp_name->kind == VARIABLE){
 			Operand op1 = new_operand(ADDRESS, 0, 0, new_temp());
 			Operand op2 = var->temp_name;
 			INIT_2_OP(iADDRESS)
