@@ -374,6 +374,7 @@ make_helper(VarDec2){
 					newdim->typeName = "ARRAY";
 					newdim->kind = ARRAY;
 					newdim->array.size = node->intgr;
+					parent->typeinfo = newdim;
 					if(type->kind != ARRAY){
 						newdim->array.elem = type;
 						var->type = newdim;

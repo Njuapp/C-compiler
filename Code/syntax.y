@@ -4,6 +4,7 @@
 #include "semantic.h"
 void yyerror(char* msg,...);
 void print_table();
+void interOptimize();
 extern int lexerr;
 extern struct GrammerTree* root;
 int synerr = 0;
@@ -44,6 +45,7 @@ Program :ExtDefList{
 		//eval($$,0);
 		intercodeInit();
 		sdt($$);
+		interOptimize();
 		}
 	;
 ExtDefList:ExtDef ExtDefList{
