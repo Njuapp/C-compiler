@@ -106,11 +106,12 @@ char* get_str(Operand op){
 		sprintf(text, "#%f", op->floatValue);
 	else if(op->kind == FUNC_NAME)
 		sprintf(text, "%s", op->func_name);
+	else if(op->kind == ADDRESS)
+		sprintf(text, "%s", op->addr);
 	return text;
 }
 
 void print_intercode(){
-	printf("start to print code\n");
 	InterCodes p = codeField->next;
 	while(p){
 		InterCode code = p->code;
@@ -165,6 +166,21 @@ void print_intercode(){
 				sprintf(text, "%s := %s\n", op1->var, t1);
 				free(t1);
 				break;
+			case iADDRESS:
+				assert(op1->kind == ADDRESS);
+				assert(op2->kind == VARIABLE);
+				sprintf(text, "%s := &%s\n", op1->addr, op2->var);
+				break; 
+			case iGET:
+				assert(op1->kind == VARIABLE);
+				assert(op2->kind == ADDRESS);
+				sprintf(text, "%s := *%s\n",op1->var, get_str(op2));
+				break;
+			case iPOST:
+				assert(op1->kind == ADDRESS);
+				assert(op2->kind == VARIABLE|| is_constant(op2->kind));
+				sprintf(text, "*%s := %s\n",op1->addr, get_str(op2));
+				break;
 			case iWRITE:
 				sprintf(text, "WRITE %s\n", get_str(op1));
 				break;
@@ -177,7 +193,7 @@ void print_intercode(){
 				break;
 			case iDEC:
 				assert(op1->kind == VARIABLE && op2->kind == CONSTANT_INT);
-				sprintf(text, "DEC %s %d\n", op1->var, op2->intValue * WORD_LENGTH);
+				sprintf(text, "DEC %s %d\n", op1->var, op2->intValue  );
 				break;
 			case iADD:
 				sprintf(text, "%s := %s + %s\n", op1->var , get_str(op2), get_str(op3));

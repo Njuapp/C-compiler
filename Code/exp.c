@@ -29,7 +29,10 @@
 make_helper(ExpASSIGNExp){
 	switch(location){
 		case 1:
-		if(!inh){
+		if(inh){
+			node->leftside = 1;
+		}
+		else{
 			if(!node->isLeft)
 				printf("Error type 6 at Line %d: The left-hand side of an assignment must be a variable.\n",node->line);
 			parent->typeinfo = node->typeinfo;
@@ -45,7 +48,13 @@ make_helper(ExpASSIGNExp){
 		}
 		if(!typeEqual(parent->typeinfo, node->typeinfo))
 			printf("Error type 5 at Line %d: Type mismatched for assignment.\n",node->line);
-		InterCode code = new_intercode(iASSIGN);
+
+		//intercode
+		InterCode code = NULL;
+		if(parent->place->kind != ADDRESS)
+			code = new_intercode(iASSIGN);
+		else
+			code = new_intercode(iPOST);
 		code->operate2.op1 = parent->place;
 		code->operate2.op2 = node->place;
 		addCode(code, context);
@@ -228,6 +237,7 @@ make_helper(ExpPLUS){ // exp for plus minus star div
 			}
 			parent->typeinfo = node->typeinfo;
 			parent->place = node->place;
+			
 			break;
 		case 2:
 			break;
@@ -580,15 +590,40 @@ make_helper(ExpArray){
 					printf("Error type 10 at Line %d: The exp is not a array.\n",node->line);
 				parent->typeinfo = node->typeinfo->array.elem;
 				parent->isLeft = 1;
+				parent->place = node->place;
 			}
 			break;
 		case 2:
 			break;
 		case 3:
-			if(!inh){
+			if(inh){
+				node->place = new_operand(VARIABLE, 0, 0, new_temp());
+			}
+			else{
 				struct Type* INT = findType("int");
 				if(!typeEqual(node->typeinfo, INT))
 					printf("Error type 12 at Line %d: The exp is not a integer.\n",node->line);
+				Operand op1 = new_operand(VARIABLE, 0, 0, new_temp());
+				Operand op2 = node->place;
+				Operand op3 = NULL;
+				if(parent->typeinfo->kind == ARRAY)
+					op3 = new_operand(CONSTANT_INT, parent->typeinfo->array.offset, 0,NULL); 
+				else
+					op3 = new_operand(CONSTANT_INT, 4, 0, NULL);
+				INIT_3_OP(iMUL)
+				op3 = op1;
+				InterCode code2 = new_intercode(iADD);
+				code2->operate3.op1 = parent->place;
+				code2->operate3.op2 = parent->place;
+				code2->operate3.op3 = op3;
+				addCode(code2, context);
+				if(parent->typeinfo->kind != ARRAY && parent->leftside == 0){
+					InterCode code3 = new_intercode(iGET);
+					code3->operate2.op1 = new_operand(VARIABLE, 0, 0, new_temp());
+					code3->operate2.op2 = parent->place;
+					addCode(code3, context);
+					parent->place = code3->operate2.op1;
+				}
 			}
 
 			OTHER_CASES;
@@ -640,8 +675,15 @@ make_helper(ExpID){
 
 		//intercode
 		if(parent->place) free(parent->place);
-		parent->place = var->temp_name;
-
+		if(var->type->kind == ARRAY){
+			Operand op1 = new_operand(ADDRESS, 0, 0, new_temp());
+			Operand op2 = var->temp_name;
+			INIT_2_OP(iADDRESS)
+			parent->place = op1;
+		}
+		else{
+			parent->place = var->temp_name;
+		}
 		/*
 		if(op1){
 			Operand op2 = var->temp_name;

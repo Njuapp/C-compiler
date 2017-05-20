@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include "semantic.h"
 void yyerror(char* msg,...);
+void print_table();
 extern int lexerr;
 extern struct GrammerTree* root;
 int synerr = 0;

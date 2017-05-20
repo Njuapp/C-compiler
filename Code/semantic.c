@@ -209,7 +209,7 @@ make_helper(Dec1){
 			assert(var);
 			if(var->type->kind == ARRAY){
 				Operand op1 = var->temp_name;
-				Operand op2 = new_operand(CONSTANT_INT, var->type->array.size, 0.0, NULL);
+				Operand op2 = new_operand(CONSTANT_INT, var->type->array.offset, 0.0, NULL);
 				InterCode code = new_intercode(iDEC);
 				code->operate2.op1 = op1;
 				code->operate2.op2 = op2;
@@ -347,13 +347,6 @@ make_helper(VarDec2){
 						parent->arrayname = node->arrayname;
 					}
 					else{
-						struct Type* type = (struct Type*)malloc(sizeof(struct Type));
-						type->kind = ARRAY;
-						struct Var* var = findVar(node->arrayname);
-						type->array.elem = var->type;
-						type->typeName = 0;
-						type->next = 0;
-						var->type = type;
 						parent->arrayname = node->arrayname;
 					}
 				}
@@ -365,6 +358,7 @@ make_helper(VarDec2){
 			if(!inh){
 				if(parent->arrayname){
 					struct Type* type = 0;
+					/*
 					if(parent->tag == STRU){
 						struct FieldList* field = parent->stru;
 						while(field->next)
@@ -372,27 +366,38 @@ make_helper(VarDec2){
 						type = field->type;
 						type->array.size = node->intgr;
 					}
+					else{*/
+					struct Var* var = findVar(parent->arrayname);
+					type = var->type;
+					struct Type* newdim = (struct Type*)malloc(sizeof(struct Type));
+					newdim->next = NULL;
+					newdim->typeName = "ARRAY";
+					newdim->kind = ARRAY;
+					newdim->array.size = node->intgr;
+					if(type->kind != ARRAY){
+						newdim->array.elem = type;
+						var->type = newdim;
+					}
 					else{
-						struct Var* var = findVar(parent->arrayname);
-						type = var->type;
-						type->array.size =node->intgr;
+						while(type->array.elem->kind == ARRAY){
+							type = type->array.elem;
+						}
+						newdim->array.elem = type->array.elem;
+						type->array.elem = newdim;
 					}
-					assert(type->kind == ARRAY);
-					struct Type* t = type;
-					char* name = (char*)malloc(sizeof(char)*NAME_MAX_LENGTH);
-					name[0] = '\0';
-					while(t->kind == ARRAY){
-						char *number = (char*)malloc(sizeof(char)*NAME_MAX_LENGTH);
-						sprintf(number, "[%d]", t->array.size);
-						strcat(name, number);
-						free(number);
-						t = t->array.elem;
+					int top = 0;
+					struct Type* offsets[100];
+					struct Type* p; 
+					for(p= var->type ; p->kind == ARRAY; p = p->array.elem){
+						offsets[top] = p;
+						top++;
 					}
-					char *temp = (char*)malloc(sizeof(char)*NAME_MAX_LENGTH);
-					strcpy(temp, t->typeName);
-					strcat(temp, name);
-					free(name);
-					type->typeName = temp;
+					int sz = 4;
+					while(top>0){
+						top--;
+						sz *= offsets[top]->array.size;
+						offsets[top]->array.offset = sz;
+					}
 				}
 			}
 			break;

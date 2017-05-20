@@ -157,8 +157,8 @@ void print_table(){
 		if(varTable[i] && varTable[i]->type && varTable[i]->name){
 			if(varTable[i]->type->kind == ARRAY){
 				struct Type* type = varTable[i]->type;
-				while(type->array.size){
-					printf("%d ",type->array.size);
+				while(type->kind== ARRAY){
+					printf("[%d]offset:%d ",type->array.size,type->array.offset);
 					type = type->array.elem;
 				}
 			}

@@ -10,7 +10,7 @@ struct Type{
 	enum{ BASIC, ARRAY, STRUCTURE} kind;
 	union{
 		int basic;//1 is for int , 2 is for float
-		struct { struct Type* elem; int size; }array;
+		struct { struct Type* elem; int size;int offset; }array;
 		struct FieldList *structure;
 	};
 	char* typeName;

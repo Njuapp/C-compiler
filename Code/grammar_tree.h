@@ -33,6 +33,7 @@ struct GrammerTree{
 	Operand label_true;
 	Operand label_false;
 	Operands paramlist;	
+	int leftside;
 	// intermediate code off
 
 	union{

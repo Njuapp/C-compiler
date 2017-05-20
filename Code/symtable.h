@@ -14,4 +14,5 @@ void addFunc(char* funcname, struct Type* typeinfo);
 void addBasicType(char* typeName);
 void addStruType(struct FieldList* stru, char* typeName);
 struct Type* findType(char* typeName);
+void print_table();
 #endif
