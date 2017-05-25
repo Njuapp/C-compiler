@@ -282,14 +282,39 @@ make_helper(ExpRELOP){//Exp for relational operation such as <,>,=,etc.
 
 			//intercode
 			parent->t2 = node->place;
-			InterCode code = new_intercode(iREGOTO);
-			code->operate4.op1 = parent->t1;
-			code->operate4.op2 = parent->relop;
-			code->operate4.op3 = parent->t2;
-			code->operate4.op4 = parent->label_true;
-			addCode(code, context);
+			if(is_constant(parent->t1->kind) && is_constant(parent->t2->kind)){
+				assert(parent->t1->kind == CONSTANT_INT && parent->t2->kind == CONSTANT_INT);
+				int v1 = parent->t1->intValue;
+				int v2 = parent->t2->intValue;
+				int ret = 0;
+				char* str = parent->relop->relop;
+				if(!strcmp(str, "=="))
+					ret = (v1==v2);
+				else if(!strcmp(str, "!="))
+					ret = (v1!=v2);
+				else if(!strcmp(str, "<"))
+					ret = (v1<v2);
+				else if(!strcmp(str, ">="))
+					ret = (v1>=v2);
+				else if(!strcmp(str, ">"))
+					ret = (v1>v2);
+				else if(!strcmp(str, "<="))
+					ret = (v1<=v2);
+				else
+					assert(0);
+				InterCode code = new_intercode(iGOTO);
+				code->operate1.op = (ret)?parent->label_true:parent->label_false;
+				addCode(code, context);
+			}else{
+				InterCode code = new_intercode(iREGOTO);
+				code->operate4.op1 = parent->t1;
+				code->operate4.op2 = parent->relop;
+				code->operate4.op3 = parent->t2;
+				code->operate4.op4 = parent->label_true;
+				addCode(code, context);
+			}
 
-			code = new_intercode(iGOTO);
+			InterCode code = new_intercode(iGOTO);
 			code->operate1.op = parent->label_false;
 			addCode(code, context);
 			if(!parent->isBoolOrValue){

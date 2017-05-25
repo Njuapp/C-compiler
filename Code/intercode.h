@@ -66,6 +66,8 @@ void print_intercode();
 char* new_temp();
 char* new_label();
 char* new_var();
+int getLabelCount();
+int getVarCount();
 void free_operand(Operand op);
 void free_intercode(InterCode code);
 void free_intercodes(InterCodes cds);

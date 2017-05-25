@@ -66,9 +66,6 @@ void controlOptimize(InterCodes start, InterCodes end){
 		}
 		p = p->next;
 	}
-	label_list[index++]="label7";
-	label_list[index++]="label8";
-	label_list[index++]="label7";
 	qsort(label_list, index, sizeof(char*), mystrcmp);
 	
 	for(int i = 0; i + 1 < index; i++)
@@ -79,8 +76,6 @@ void controlOptimize(InterCodes start, InterCodes end){
 			index--;
 		}
 	}
-	for(int i = 0; i< index; i++)
-		;//	printf("%s\n", label_list[i]);
 	
 	p = start;
 	while(p != end){
@@ -88,7 +83,9 @@ void controlOptimize(InterCodes start, InterCodes end){
 		if(code->kind == iLABEL){
 			char *label = code->operate1.op->label;
 			if(!bsearch(&label, label_list, index, sizeof(char*), mystrcmp)){
-				p->next->prev = p->prev;
+				if(p->next != end){
+					p->next->prev = p->prev;
+				}
 				p->prev->next = p->next;
 				InterCodes pp = p;
 				p = p->prev;
@@ -185,8 +182,89 @@ void arithOptimize(InterCodes start, InterCodes end){
 	}
 }
 
+
+struct InterCodesList{
+	InterCodes code;
+	int type;
+	struct InterCodesList* next;
+};
+
+struct OperandTable{
+	Operand op;
+	struct InterCodesList *list;
+} *varTable, *labelTable;
+int varIndex = 0, labelIndex = 0;
+
+void addCodeList(struct OperandTable *pos, InterCodes code, int type){
+	struct InterCodesList *newp = malloc(sizeof(struct InterCodesList));
+	newp->code = code;
+	newp->type = type;
+	newp->next = NULL;
+	if(pos->list){
+		struct InterCodesList *p = pos->list;
+		while(p->next)
+			p = p->next;
+		p->next = newp->next;	
+	}
+	else
+		pos->list = newp;
+}
+
+// flag 0 for var, 1 for label
+int findIndex(Operand op, int flag){
+	struct OperandTable *table = (flag)?labelTable:varTable;
+	int endIndex = (flag)?labelIndex:varIndex;
+	for(int i = 0; i < endIndex; i++){
+		if(opEqual(table[i].op, op))
+			return i;
+	}
+	return endIndex;
+}
+
+void scanCode(InterCodes start, InterCodes end){
+	InterCodes p = start;
+	while(p != end){
+		InterCode code = p->code;
+		Operand op = NULL;
+		int type;
+		struct OperandTable *table;
+		int index;
+		int *endIndex;
+		if(code->kind == iREGOTO){
+			op = code->operate4.op4;
+			type = 0;
+			table = labelTable;
+			index = findIndex(op, 1);
+			endIndex = &labelIndex;
+		}else if(code->kind == iGOTO){
+			op = code->operate1.op;
+			type = 0;
+			table = labelTable;
+			index = findIndex(op, 1);
+			endIndex = &labelIndex;
+		}else if(code->kind == iLABEL){
+			op = code->operate1.op;
+			type = 1;
+			table = labelTable;
+			index = findIndex(op, 1);
+			endIndex = &labelIndex;
+		}
+		if(op != NULL){
+			if(table[index].op == NULL){
+				table[index].op = op;
+				*endIndex++;
+			}
+			addCodeList(&(table[index]), p, type);
+		}
+		p = p->next;
+	}	
+}
+
 void interOptimize(){
 	InterCodes root = codeField;
 	controlOptimize(root->next, NULL);
+	varTable = (struct OperandTable*)malloc(sizeof(struct OperandTable)*getVarCount());
+	labelTable = (struct OperandTable*)malloc(sizeof(struct OperandTable)*getLabelCount());
+	scanCode(root->next, NULL);
 }
 

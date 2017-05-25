@@ -119,25 +119,36 @@ int op_num(int kind){
 		return 4;
 }
 
+static int count_temp = 1;
+static int count_label = 1;
+static int count_var = 1;
+
 char* new_temp(){
-	static int count = 1;
 	char* target = (char*)malloc(sizeof(char)*STRING_LENGTH);
-	sprintf(target, "temp%d", count++);
+	sprintf(target, "temp%d", count_temp++);
 	return target;
 }
 
 char* new_label(){
 	static int count = 1;
 	char* target = (char*)malloc(sizeof(char)*STRING_LENGTH);
-	sprintf(target, "label%d", count++);
+	sprintf(target, "label%d", count_label++);
 	return target;
 }
 
 char* new_var(){
 	static int count = 1;
 	char* target = (char*)malloc(sizeof(char)*STRING_LENGTH);
-	sprintf(target, "var%d", count++);
+	sprintf(target, "var%d", count_var++);
 	return target;
+}
+
+int getVarCount(){
+	return count_temp + count_var;
+}
+
+int getLabelCount(){
+	return count_label;
 }
 
 #define CODE_LENGTH 50
