@@ -331,6 +331,16 @@ make_helper(ExpPLUS){ // exp for plus minus star div
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 
 			//intercode
+			if(parent->place->kind == CONSTANT_FLOAT&&node->place->kind == CONSTANT_FLOAT){
+				parent->place = new_operand(CONSTANT_FLOAT, 0, parent->place->floatValue + node->place->floatValue, NULL);
+				OTHER_CASES
+				return;
+			}
+			else if(parent->place->kind == CONSTANT_INT && node->place->kind ==CONSTANT_INT){
+				parent->place = new_operand(CONSTANT_INT,  parent->place->intValue + node->place->intValue,0, NULL);
+				OTHER_CASES
+				return;
+			}
 			char* temp = new_temp();
 			Operand op1 = new_operand(VARIABLE, 0, 0.0, temp);
 			Operand op2 = parent->place;
@@ -338,6 +348,7 @@ make_helper(ExpPLUS){ // exp for plus minus star div
 			INIT_3_OP(iADD)
 			parent->place = op1;
 
+			
 			OTHER_CASES
 			break;
 		default: 
@@ -367,7 +378,16 @@ make_helper(ExpMINUS){ // exp for plus minus star div
 			if(ltype->kind!=BASIC || !typeEqual(ltype, rtype))
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 			
-			//intercode
+			if(parent->place->kind == CONSTANT_FLOAT&&node->place->kind == CONSTANT_FLOAT){
+				parent->place = new_operand(CONSTANT_FLOAT, 0, parent->place->floatValue - node->place->floatValue, NULL);
+				OTHER_CASES
+				return;
+			}
+			else if(parent->place->kind == CONSTANT_INT && node->place->kind ==CONSTANT_INT){
+				parent->place = new_operand(CONSTANT_INT, parent->place->intValue - node->place->intValue,0, NULL);
+				OTHER_CASES
+				return;
+			}
 			char* temp = new_temp();
 			Operand op1 = new_operand(VARIABLE, 0, 0.0, temp);
 			Operand op2 = parent->place;
@@ -405,6 +425,17 @@ make_helper(ExpSTAR){ // exp for plus minus star div
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 
 			//intercode
+			if(parent->place->kind == CONSTANT_FLOAT&&node->place->kind == CONSTANT_FLOAT){
+				parent->place = new_operand(CONSTANT_FLOAT, 0, parent->place->floatValue * node->place->floatValue, NULL);
+				OTHER_CASES
+				return;
+			}
+			else if(parent->place->kind == CONSTANT_INT && node->place->kind ==CONSTANT_INT){
+				parent->place = new_operand(CONSTANT_INT, parent->place->intValue * node->place->intValue,0, NULL);
+				OTHER_CASES
+				return;
+			}
+
 			char* temp = new_temp();
 			Operand op1 = new_operand(VARIABLE, 0, 0.0, temp);
 			Operand op2 = parent->place;
@@ -442,6 +473,17 @@ make_helper(ExpDIV){ // exp for plus minus star div
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 
 			//intercode
+			if(parent->place->kind == CONSTANT_FLOAT&&node->place->kind == CONSTANT_FLOAT){
+				parent->place = new_operand(CONSTANT_FLOAT, 0, parent->place->floatValue / node->place->floatValue, NULL);
+				OTHER_CASES
+				return;
+			}
+			else if(parent->place->kind == CONSTANT_INT && node->place->kind ==CONSTANT_INT){
+				parent->place = new_operand(CONSTANT_INT, parent->place->intValue / node->place->intValue,0, NULL);
+				OTHER_CASES
+				return;
+			}
+
 			char* temp = new_temp();
 			Operand op1 = new_operand(VARIABLE, 0, 0.0, temp);
 			Operand op2 = parent->place;
@@ -491,6 +533,18 @@ make_helper(ExpUMINUS){ // exp for minus exp
 			if(node->typeinfo->kind != BASIC)
 				printf("Error type 7 at Line %d: Type dismatched for operands.\n",node->line);
 			parent->typeinfo = node->typeinfo;
+
+			if(node->place->kind == CONSTANT_FLOAT){
+				parent->place = new_operand(CONSTANT_FLOAT, 0,  - node->place->floatValue, NULL);
+				OTHER_CASES
+				return;
+			}
+			else if( node->place->kind ==CONSTANT_INT){
+				parent->place = new_operand(CONSTANT_INT,  - node->place->intValue,0, NULL);
+				OTHER_CASES
+				return;
+			}
+
 			Operand op1 = new_operand(VARIABLE, 0, 0.0, new_temp());
 			Operand op2 = new_operand(CONSTANT_INT, 0, 0.0, NULL);
 			Operand op3 = node->place;
