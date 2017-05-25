@@ -40,6 +40,56 @@ InterCode new_intercode(int kind){
 	return target;
 }
 
+Operand* get_operand(InterCode code, int num){
+	Operand* re = (Operand*)malloc(sizeof(Operand)*num);
+	re[0] = code->operate1.op;
+	if(num >= 2)
+		re[1] = code->operate2.op2;
+	if(num >= 3)
+		re[2] = code->operate3.op3;
+	if(num >= 4)
+		re[3] = code->operate4.op4;
+	return re;
+}
+
+void free_operand(Operand op){
+	if(!is_constant(op->kind) && op->kind != oRELOP)
+		free(op->var);
+	free(op);
+}
+
+void free_intercode(InterCode code){
+	int num = op_num(code->kind);
+	Operand* ops = get_operand(code, num);
+	for(int i = 0; i < num; i++)
+		free_operand(ops[i]);
+	free(ops);
+	free(code);
+}
+
+void free_intercodes(InterCodes cds){
+	free_intercode(cds->code);
+	free(cds);
+}
+
+int opEqual(Operand op1, Operand op2){
+	if(op1->kind == op2->kind && op1->intValue == op2->intValue)
+		return 1;
+	return 0;
+}
+
+int icEqual(InterCode code1, InterCode code2){
+	if(code1->kind == code2->kind){
+		int num = op_num(code1->kind);
+		Operand* ops1 = get_operand(code1, num), *ops2 = get_operand(code2, num);
+		for(int i=0; i<num ; i++){
+			if(!opEqual(ops1[i], ops2[i]))
+				return 0;
+		}
+		return 1;
+	}
+}
+
 void intercodeInit(){
 	codeField = (InterCodes)malloc(sizeof(struct InterCodes_));
 	codeField->code = NULL;

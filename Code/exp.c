@@ -682,22 +682,35 @@ make_helper(ExpArray){
 				struct Type* INT = findType("int");
 				if(!typeEqual(node->typeinfo, INT))
 					printf("Error type 12 at Line %d: The exp is not a integer.\n",node->line);
-				Operand op1 = new_operand(VARIABLE, 0, 0, new_temp());
+				Operand op1 = NULL;
 				Operand op2 = node->place;
 				Operand op3 = NULL;
-				if(parent->typeinfo->kind == ARRAY)
-					op3 = new_operand(CONSTANT_INT, parent->typeinfo->array.offset, 0,NULL); 
+				if(is_constant(op2->kind)){
+					assert(op2->kind == CONSTANT_INT);
+					op1 = new_operand(CONSTANT_INT, op2->intValue * 4, 0, NULL);
+				}
 				else
-					op3 = new_operand(CONSTANT_INT, 4, 0, NULL);
-				INIT_3_OP(iMUL)
+				{
+					op1 = new_operand(VARIABLE, 0, 0, new_temp());
+					if(parent->typeinfo->kind == ARRAY)
+						op3 = new_operand(CONSTANT_INT, parent->typeinfo->array.offset, 0,NULL); 
+					else
+						op3 = new_operand(CONSTANT_INT, 4, 0, NULL);
+					INIT_3_OP(iMUL)
+				}
 				op3 = op1;
-				op1 = new_operand(ADDRESS, 0, 0, new_temp());
-				InterCode code2 = new_intercode(iADD);
-				code2->operate3.op1 = op1;
-				code2->operate3.op2 = parent->place;
-				code2->operate3.op3 = op3;
-				addCode(code2, context);
-				parent->place = op1;
+				if(is_constant(op3->kind) && op3->intValue == 0){
+					op1 = parent->place;
+				}
+				else{
+					op1 = new_operand(ADDRESS, 0, 0, new_temp());
+					InterCode code2 = new_intercode(iADD);
+					code2->operate3.op1 = op1;
+					code2->operate3.op2 = parent->place;
+					code2->operate3.op3 = op3;
+					addCode(code2, context);
+					parent->place = op1;
+				}
 				if(parent->typeinfo->kind != ARRAY && parent->leftside == 0){
 					InterCode code3 = new_intercode(iGET);
 					code3->operate2.op1 = new_operand(VARIABLE, 0, 0, new_temp());

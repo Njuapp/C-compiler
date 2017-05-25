@@ -66,6 +66,12 @@ void print_intercode();
 char* new_temp();
 char* new_label();
 char* new_var();
+void free_operand(Operand op);
+void free_intercode(InterCode code);
+void free_intercodes(InterCodes cds);
+int opEqual(Operand op1, Operand op2);
+int icEqual(InterCode code1, InterCode code2);
+Operand* get_operand(InterCode code, int num);
 
 #define INIT_3_OP(KIND) \
 	InterCode code = new_intercode(KIND); \
