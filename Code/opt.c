@@ -96,93 +96,6 @@ void controlOptimize(InterCodes start, InterCodes end){
 	}
 }
 
-#define get_value(op) ((op->kind==CONSTANT_FLOAT)?op->floatValue:op->intValue)
-void arithOptimize(InterCodes start, InterCodes end){
-	InterCodes p = start;
-	while(p != end){
-		InterCode code = p->code;
-		Operand sub = NULL;
-		Operand target = NULL;
-		Operand op1, op2, op3;
-		switch(code->kind){
-			case iASSIGN:
-				op2 = code->operate2.op2;
-				if(is_constant(op2->kind)){
-					sub = code->operate2.op1;
-					target = op2;
-				}
-				break;
-			case iADD:
-				op2 = code->operate3.op2;
-				op3 = code->operate3.op3;
-				if(is_constant(op2->kind) && is_constant(op3->kind)){
-					sub = code->operate3.op1;
-					if(op2->kind == CONSTANT_FLOAT || op3->kind == CONSTANT_FLOAT)
-					{
-						target = new_operand(CONSTANT_FLOAT, 0, get_value(op2) + get_value(op3), NULL);
-					}
-				}
-				break;
-
-			case iSUB:
-				op2 = code->operate3.op2;
-				op3 = code->operate3.op3;
-				if(is_constant(op2->kind) && is_constant(op3->kind)){
-					sub = code->operate3.op1;
-					if(op2->kind == CONSTANT_FLOAT || op3->kind == CONSTANT_FLOAT)
-					{
-						target = new_operand(CONSTANT_FLOAT, 0, get_value(op2) - get_value(op3), NULL);
-					}
-				}
-				break;
-
-			case iMUL:
-				op2 = code->operate3.op2;
-				op3 = code->operate3.op3;
-				if(is_constant(op2->kind) && is_constant(op3->kind)){
-					sub = code->operate3.op1;
-					if(op2->kind == CONSTANT_FLOAT || op3->kind == CONSTANT_FLOAT)
-					{
-						target = new_operand(CONSTANT_FLOAT, 0, get_value(op2) * get_value(op3), NULL);
-					}
-				}
-				break;
-
-			case iDIV:
-				op2 = code->operate3.op2;
-				op3 = code->operate3.op3;
-				if(is_constant(op2->kind) && is_constant(op3->kind)){
-					sub = code->operate3.op1;
-					if(op2->kind == CONSTANT_FLOAT || op3->kind == CONSTANT_FLOAT)
-					{
-						target = new_operand(CONSTANT_FLOAT, 0, get_value(op2) / get_value(op3), NULL);
-					}
-				}
-				break;
-			case iREGOTO:
-				break;
-		}
-		/*
-		if(!sub && !target){
-			InterCodes point = p->next;
-			p = p->prev;
-			p->next = point;
-			if(point) point->prev = p;
-
-			while(point != end){
-				InterCode code = point->code;
-				switch(code->kind){
-					//TODO: unknown
-				}
-				point = point->next;
-			}
-		}
-		*/
-		p = p->next;
-	}
-}
-
-
 struct InterCodesList{
 	InterCodes codes;
 	int type; // 0 for product, 1 for use
@@ -231,12 +144,24 @@ InterCodes findLabel(struct InterCodesList *list){
 	}
 }
 
-void addTable(Operand op, int type, struct OperandTable *table, int index, int *endIndex, InterCodes p){
-	if(table[index].op == NULL){
-		table[index].op = op;
+// type for prodect/use, flag for var/label
+void addTable(Operand op, int type, int flag, InterCodes p){
+	struct OperandTable *point;
+	int *endIndex;
+   	
+	int index = findIndex(op, flag); 
+	if(flag){
+		point = &(labelTable[index]);
+		endIndex = &(labelIndex);
+	}else{
+		point = &(varTable[index]);
+		endIndex = &(varIndex);
+	}
+	if(point->op == NULL){
+		point->op = op;
 		(*endIndex)++;
 	}
-	addCodeList(&(table[index]), p, type);
+	addCodeList(point, p, type);
 }
 
 void scanCode(InterCodes start, InterCodes end){
@@ -251,29 +176,20 @@ void scanCode(InterCodes start, InterCodes end){
 		switch(code->kind){
 			case iREGOTO:
 				op = code->operate4.op4;
-				type = 0;
-				table = labelTable;
-				index = findIndex(op, 1);
-				endIndex = &labelIndex;
-				addTable(op, type, table, index, endIndex, p);
+				addTable(op, 0, 1, p);
 				break;
 			case iGOTO:
 				op = code->operate1.op;
-				type = 0;
-				table = labelTable;
-				index = findIndex(op, 1);
-				endIndex = &labelIndex;
-				addTable(op, type, table, index, endIndex, p);
+				addTable(op, 0, 1, p);
 				break;
 			case iLABEL:
 				op = code->operate1.op;
-				type = 1;
-				table = labelTable;
-				index = findIndex(op, 1);
-				endIndex = &labelIndex;
-				addTable(op, type, table, index, endIndex, p);
+				addTable(op, 1, 1, p);
 				break;
 			case iASSIGN:
+				op = code->operate2.op1;
+				type = 1;
+				table = varTable;
 				break;
 			case iADD:case iSUB:case iMUL:case iDIV:
 				break;
@@ -361,7 +277,7 @@ void labelOptimize(InterCodes start, InterCodes end){
 				p = p->prev;
 				listDelete(opp, pp);
 				free_intercodes(pp, 0);
-			}else if(pos->next->code->kind == iGOTO){
+			}else if(pos->next && pos->next->code->kind == iGOTO){
 				code->operate1.op = pos->next->code->operate1.op;
 				listDelete(opp, p);
 				opp = &(labelTable[findIndex(code->operate1.op, 1)]);
@@ -397,8 +313,11 @@ void interOptimize(){
 		}
 		printf("\n");
 	}
+	print_intercode();
 	*/
+
 	labelOptimize(root->next, NULL);
+	
 	/*
 	printf("\n");
 	for(int i=0;i<labelIndex;i++){
