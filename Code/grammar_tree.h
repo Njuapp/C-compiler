@@ -29,6 +29,7 @@ struct GrammerTree{
 	// intermediate code on
 	Operand place;
 	int isParam;
+	int isArray;
 	int isBoolOrValue;
 	Operand t1;
 	Operand t2;

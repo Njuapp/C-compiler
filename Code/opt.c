@@ -98,7 +98,7 @@ void controlOptimize(InterCodes start, InterCodes end){
 
 struct InterCodesList{
 	InterCodes codes;
-	int type; // 0 for product, 1 for use
+	int type; // 0 for use, 1 for product, 2 for unoptimizable
 	struct InterCodesList* next;
 };
 
@@ -144,24 +144,26 @@ InterCodes findLabel(struct InterCodesList *list){
 	}
 }
 
-// type for prodect/use, flag for var/label
+// type for use/product, flag for var/label
 void addTable(Operand op, int type, int flag, InterCodes p){
-	struct OperandTable *point;
-	int *endIndex;
+	if(op->kind == VARIABLE || op->kind == oLABEL || op->kind == ADDRESS){
+		struct OperandTable *point;
+		int *endIndex;
    	
-	int index = findIndex(op, flag); 
-	if(flag){
-		point = &(labelTable[index]);
-		endIndex = &(labelIndex);
-	}else{
-		point = &(varTable[index]);
-		endIndex = &(varIndex);
+		int index = findIndex(op, flag); 
+		if(flag){
+			point = &(labelTable[index]);
+			endIndex = &(labelIndex);
+		}else{
+			point = &(varTable[index]);
+			endIndex = &(varIndex);
+		}
+		if(point->op == NULL){
+			point->op = op;
+			(*endIndex)++;
+		}
+		addCodeList(point, p, type);
 	}
-	if(point->op == NULL){
-		point->op = op;
-		(*endIndex)++;
-	}
-	addCodeList(point, p, type);
 }
 
 void scanCode(InterCodes start, InterCodes end){
@@ -177,6 +179,8 @@ void scanCode(InterCodes start, InterCodes end){
 			case iREGOTO:
 				op = code->operate4.op4;
 				addTable(op, 0, 1, p);
+				addTable(code->operate4.op1, 2, 0, p);
+				addTable(code->operate4.op3, 2, 0, p);
 				break;
 			case iGOTO:
 				op = code->operate1.op;
@@ -188,30 +192,48 @@ void scanCode(InterCodes start, InterCodes end){
 				break;
 			case iASSIGN:
 				op = code->operate2.op1;
-				type = 1;
-				table = varTable;
+				addTable(op, 1, 0, p);
+				op = code->operate2.op2;
+				addTable(op, 0, 0, p);
 				break;
 			case iADD:case iSUB:case iMUL:case iDIV:
+				op = code->operate3.op1;
+				addTable(op, 1, 0, p);
+				addTable(code->operate3.op2, 0, 0, p);
+				addTable(code->operate3.op3, 0, 0, p);
 				break;
 			case iADDRESS:
+				addTable(code->operate2.op1, 2, 0, p);
+				addTable(code->operate2.op2, 2, 0, p);
 				break;
 			case iGET:
+				addTable(code->operate2.op1, 1, 0, p);
+				addTable(code->operate2.op2, 2, 0, p);
 				break;
 			case iPOST:
+				addTable(code->operate2.op1, 2, 0, p);
+				addTable(code->operate2.op2, 2, 0, p);
 				break;
 			case iRETURN:
+				addTable(code->operate1.op, 2, 0, p);
 				break;
 			case iDEC:
+				addTable(code->operate1.op, 1, 0, p);
 				break;
 			case iARG:
+				addTable(code->operate1.op, 2, 0, p);
 				break;
 			case iCALL:
+				addTable(code->operate1.op, 1, 0, p);
 				break;
 			case iPARAM:
+				addTable(code->operate1.op, 2, 0, p);
 				break;
 			case iREAD:
+				addTable(code->operate1.op, 2, 0, p);
 				break;
 			case iWRITE:
+				addTable(code->operate1.op, 2, 0, p);
 				break;
 			default:
 				break;
@@ -293,10 +315,11 @@ void interOptimize(){
 	controlOptimize(root->next, NULL);
 	varTable = (struct OperandTable*)malloc(sizeof(struct OperandTable)*getVarCount());
 	labelTable = (struct OperandTable*)malloc(sizeof(struct OperandTable)*getLabelCount());
+
+	printf("start to scan\n");
 	scanCode(root->next, NULL);
 
-	/*
-	printf("%d, %d\n", labelIndex, varIndex);
+/*
 	for(int i=0;i<labelIndex;i++){
 		printf("%s\t", labelTable[i].op->label);
 		struct InterCodesList *list = labelTable[i].list;
@@ -313,13 +336,12 @@ void interOptimize(){
 		}
 		printf("\n");
 	}
-	print_intercode();
-	*/
+*/
 
 	labelOptimize(root->next, NULL);
 	
-	/*
-	printf("\n");
+	
+	printf("%d, %d\n", labelIndex, varIndex);
 	for(int i=0;i<labelIndex;i++){
 		if(labelTable[i].op){
 			printf("%s\t", labelTable[i].op->label);
@@ -340,7 +362,7 @@ void interOptimize(){
 		}
 		printf("\n");
 	}
-	printf("DEBUG END\n");
-	*/
+	printf("DEBUG END\n\n");
+
 }
 

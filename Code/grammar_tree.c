@@ -25,6 +25,7 @@ struct GrammerTree * create(char* name, int prod, int num, ...){
 	a->typeinfo = NULL;
 	//intercode
 	a->leftside = 0;
+	a->isArray = 0;
 	a->isParam = 0;
 	a->place = NULL;
 	a->isBoolOrValue = 0;

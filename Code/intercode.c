@@ -75,8 +75,15 @@ void free_intercodes(InterCodes cds, int flag){
 }
 
 int opEqual(Operand op1, Operand op2){
-	if(op1->kind == op2->kind && op1->intValue == op2->intValue)
-		return 1;
+	if(op1->kind == op2->kind){
+		if(op1->intValue == op2->intValue)
+			return 1;
+		if(!is_constant(op1->kind)){
+	//		printf("equal: %s %s.\n", op1->var, op2->var);
+			if(!strcmp(op1->var, op2->var))
+				return 1;
+		}
+	}
 	return 0;
 }
 
@@ -212,7 +219,7 @@ char *intercodeToStr(InterCode code){
 			free(t1);
 			break;
 		case iPARAM:
-			assert(op1->kind == VARIABLE);
+			assert(op1->kind == VARIABLE || op1->kind == ADDRESS);
 			sprintf(text, "PARAM %s\n", op1->var);
 			break;
 		case iASSIGN:

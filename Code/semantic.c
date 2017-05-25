@@ -309,6 +309,11 @@ make_helper(VarDec1){
 			addVar(node->idtype, parent->typeinfo, temp);
 			if(parent->isParam){
 				Operand var = new_operand(VARIABLE, 0, 0.0, temp);
+				if(parent->isArray){
+					var->kind = ADDRESS;
+					struct Var* var = findVar(node->idtype);
+					var->temp_name->kind = ADDRESS;
+				}
 				InterCode code = new_intercode(iPARAM);
 				code->operate1.op = var;
 				addCode(code, context);
@@ -329,6 +334,7 @@ make_helper(VarDec2){
 
 				//intercode
 				node->isParam = parent->isParam;
+				node->isArray = 1;
 			}
 			else{
 				parent->stru = node->stru;
@@ -369,8 +375,8 @@ make_helper(VarDec2){
 					else{*/
 					struct Var* var = findVar(parent->arrayname);
 					type = var->type;
-					if(parent->isParam)
-						var->temp_name->kind = ADDRESS;
+				//	if(parent->isParam)
+				//		var->temp_name->kind = ADDRESS;
 					struct Type* newdim = (struct Type*)malloc(sizeof(struct Type));
 					newdim->next = NULL;
 					newdim->typeName = "ARRAY";
