@@ -10,19 +10,28 @@
 			assert(parent->label_true && parent->label_false); \
 			Operand op1, op2, op3, op4; \
 			op1 = parent->place; \
-			op2 = new_operand(oRELOP, 0, 0.0, "!="); \
-			op3 = new_operand(CONSTANT_INT, 0, 0.0, NULL); \
-			op4 = parent->label_true; \
-			InterCode code = new_intercode(iREGOTO); \
-			code->operate4.op1 = op1; \
-			code->operate4.op2 = op2; \
-			code->operate4.op3 = op3; \
-			code->operate4.op4 = op4; \
-			addCode(code, context); \
-			op1 = parent->label_false; \
-			code = new_intercode(iGOTO); \
-			code->operate1.op = op1; \
-			addCode(code, context); \
+			if(is_constant(op1->kind)){ \
+				assert(op1->kind == CONSTANT_INT); \
+				op1 = (op1->intValue != 0)?parent->label_true:parent->label_false; \
+				InterCode code = new_intercode(iGOTO); \
+				code->operate1.op = op1; \
+				addCode(code, context); \
+			} \
+			else{ \
+				op2 = new_operand(oRELOP, 0, 0.0, "!="); \
+				op3 = new_operand(CONSTANT_INT, 0, 0.0, NULL); \
+				op4 = parent->label_true; \
+				InterCode code = new_intercode(iREGOTO); \
+				code->operate4.op1 = op1; \
+				code->operate4.op2 = op2; \
+				code->operate4.op3 = op3; \
+				code->operate4.op4 = op4; \
+				addCode(code, context); \
+				op1 = parent->label_false; \
+				code = new_intercode(iGOTO); \
+				code->operate1.op = op1; \
+				addCode(code, context); \
+			} \
 		}
 
 
