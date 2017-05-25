@@ -89,7 +89,7 @@ void controlOptimize(InterCodes start, InterCodes end){
 				p->prev->next = p->next;
 				InterCodes pp = p;
 				p = p->prev;
-				free_intercodes(pp);
+				free_intercodes(pp, 1);
 			}
 		}
 		p = p->next;
@@ -184,8 +184,8 @@ void arithOptimize(InterCodes start, InterCodes end){
 
 
 struct InterCodesList{
-	InterCodes code;
-	int type;
+	InterCodes codes;
+	int type; // 0 for product, 1 for use
 	struct InterCodesList* next;
 };
 
@@ -195,19 +195,20 @@ struct OperandTable{
 } *varTable, *labelTable;
 int varIndex = 0, labelIndex = 0;
 
-void addCodeList(struct OperandTable *pos, InterCodes code, int type){
+void addCodeList(struct OperandTable *pos, InterCodes codes, int type){
 	struct InterCodesList *newp = malloc(sizeof(struct InterCodesList));
-	newp->code = code;
+	newp->codes = codes;
 	newp->type = type;
 	newp->next = NULL;
 	if(pos->list){
 		struct InterCodesList *p = pos->list;
 		while(p->next)
 			p = p->next;
-		p->next = newp->next;	
+		p->next = newp;
 	}
-	else
+	else{
 		pos->list = newp;
+	}
 }
 
 // flag 0 for var, 1 for label
@@ -221,6 +222,23 @@ int findIndex(Operand op, int flag){
 	return endIndex;
 }
 
+InterCodes findLabel(struct InterCodesList *list){
+	struct InterCodesList *p = list;
+	while(p){
+		if(p->type)
+			return p->codes;
+		p = p->next;
+	}
+}
+
+void addTable(Operand op, int type, struct OperandTable *table, int index, int *endIndex, InterCodes p){
+	if(table[index].op == NULL){
+		table[index].op = op;
+		(*endIndex)++;
+	}
+	addCodeList(&(table[index]), p, type);
+}
+
 void scanCode(InterCodes start, InterCodes end){
 	InterCodes p = start;
 	while(p != end){
@@ -230,34 +248,128 @@ void scanCode(InterCodes start, InterCodes end){
 		struct OperandTable *table;
 		int index;
 		int *endIndex;
-		if(code->kind == iREGOTO){
-			op = code->operate4.op4;
-			type = 0;
-			table = labelTable;
-			index = findIndex(op, 1);
-			endIndex = &labelIndex;
-		}else if(code->kind == iGOTO){
-			op = code->operate1.op;
-			type = 0;
-			table = labelTable;
-			index = findIndex(op, 1);
-			endIndex = &labelIndex;
-		}else if(code->kind == iLABEL){
-			op = code->operate1.op;
-			type = 1;
-			table = labelTable;
-			index = findIndex(op, 1);
-			endIndex = &labelIndex;
-		}
-		if(op != NULL){
-			if(table[index].op == NULL){
-				table[index].op = op;
-				*endIndex++;
-			}
-			addCodeList(&(table[index]), p, type);
+		switch(code->kind){
+			case iREGOTO:
+				op = code->operate4.op4;
+				type = 0;
+				table = labelTable;
+				index = findIndex(op, 1);
+				endIndex = &labelIndex;
+				addTable(op, type, table, index, endIndex, p);
+				break;
+			case iGOTO:
+				op = code->operate1.op;
+				type = 0;
+				table = labelTable;
+				index = findIndex(op, 1);
+				endIndex = &labelIndex;
+				addTable(op, type, table, index, endIndex, p);
+				break;
+			case iLABEL:
+				op = code->operate1.op;
+				type = 1;
+				table = labelTable;
+				index = findIndex(op, 1);
+				endIndex = &labelIndex;
+				addTable(op, type, table, index, endIndex, p);
+				break;
+			case iASSIGN:
+				break;
+			case iADD:case iSUB:case iMUL:case iDIV:
+				break;
+			case iADDRESS:
+				break;
+			case iGET:
+				break;
+			case iPOST:
+				break;
+			case iRETURN:
+				break;
+			case iDEC:
+				break;
+			case iARG:
+				break;
+			case iCALL:
+				break;
+			case iPARAM:
+				break;
+			case iREAD:
+				break;
+			case iWRITE:
+				break;
+			default:
+				break;
 		}
 		p = p->next;
 	}	
+}
+
+void listDelete(struct OperandTable *op, InterCodes codes){
+	struct InterCodesList *list = op->list;
+	if(list->codes == codes){
+		op->list = list->next;
+		free(list);
+	}
+	else{
+		for(struct InterCodesList *p = list; p->next; p = p->next){
+			if(p->next->codes == codes){
+				struct InterCodesList *pp = p->next;
+				p->next = pp->next;
+				free(pp);
+				break;
+			}
+		}
+	}
+	if(op->op->kind == oLABEL){
+		struct InterCodesList *p = op->list;
+		if(p->next == NULL){
+			InterCodes codes = p->codes;
+			codes->prev->next = codes->next;
+			if(codes->next)
+				codes->next->prev = codes->prev;
+			free_intercodes(codes, 1);
+		}
+	}
+
+}
+
+void labelOptimize(InterCodes start, InterCodes end){
+	InterCodes p = start;
+	while(p != end){
+		InterCode code = p->code;
+		Operand op_label = NULL;
+		switch(code->kind){
+			case iGOTO:
+				op_label = code->operate1.op;
+				break;
+			case iREGOTO:
+				op_label = code->operate4.op4;
+				break;
+			default:
+				break;
+		}
+		if(op_label){
+			int index = findIndex(op_label, 1);
+			struct OperandTable *opp = &(labelTable[index]);
+			struct InterCodesList *list = opp->list;
+			InterCodes pos = findLabel(list);
+
+			if(pos->prev == p){
+				InterCodes pp = p;
+				p->prev->next = p->next;
+				p->next->prev = p->prev;
+				p = p->prev;
+				listDelete(opp, pp);
+				free_intercodes(pp, 0);
+			}else if(pos->next->code->kind == iGOTO){
+				code->operate1.op = pos->next->code->operate1.op;
+				listDelete(opp, p);
+				opp = &(labelTable[findIndex(code->operate1.op, 1)]);
+				addCodeList(opp, p, 0);
+			}
+		}
+		p = p->next;
+	}
 }
 
 void interOptimize(){
@@ -266,5 +378,50 @@ void interOptimize(){
 	varTable = (struct OperandTable*)malloc(sizeof(struct OperandTable)*getVarCount());
 	labelTable = (struct OperandTable*)malloc(sizeof(struct OperandTable)*getLabelCount());
 	scanCode(root->next, NULL);
+
+	/*
+	printf("%d, %d\n", labelIndex, varIndex);
+	for(int i=0;i<labelIndex;i++){
+		printf("%s\t", labelTable[i].op->label);
+		struct InterCodesList *list = labelTable[i].list;
+		for(struct InterCodesList *p = list; p!=NULL; p = p->next){
+			printf("%d, %d.\t", p->type, p->codes->code->kind);
+		}
+		printf("\n");
+	}
+	for(int i=0;i<varIndex;i++){
+		printf("%s\t", varTable[i].op->var);
+		struct InterCodesList *list = varTable[i].list;
+		for(struct InterCodesList *p = list; p!=NULL; p = p->next){
+			printf("%d, %d.\t", p->type, p->codes->code->kind);
+		}
+		printf("\n");
+	}
+	*/
+	labelOptimize(root->next, NULL);
+	/*
+	printf("\n");
+	for(int i=0;i<labelIndex;i++){
+		if(labelTable[i].op){
+			printf("%s\t", labelTable[i].op->label);
+			struct InterCodesList *list = labelTable[i].list;
+			for(struct InterCodesList *p = list; p!=NULL; p = p->next){
+				printf("%d, %d.\t", p->type, p->codes->code->kind);
+			}
+		}
+		printf("\n");
+	}
+	for(int i=0;i<varIndex;i++){
+		if(varTable[i].op){
+			printf("%s\t", varTable[i].op->var);
+			struct InterCodesList *list = varTable[i].list;
+			for(struct InterCodesList *p = list; p!=NULL; p = p->next){
+				printf("%d, %d.\t", p->type, p->codes->code->kind);
+			}
+		}
+		printf("\n");
+	}
+	printf("DEBUG END\n");
+	*/
 }
 

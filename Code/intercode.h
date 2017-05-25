@@ -68,9 +68,10 @@ char* new_label();
 char* new_var();
 int getLabelCount();
 int getVarCount();
+char *intercodeToStr(InterCode code);
 void free_operand(Operand op);
-void free_intercode(InterCode code);
-void free_intercodes(InterCodes cds);
+void free_intercode(InterCode code, int flag); // flag 1 to free operand
+void free_intercodes(InterCodes cds, int flag); // flag 1 to free operand
 int opEqual(Operand op1, Operand op2);
 int icEqual(InterCode code1, InterCode code2);
 Operand* get_operand(InterCode code, int num);
