@@ -22,7 +22,7 @@ make_helper(Specifier2){
 }
 
 make_helper(StructDef){
-	printf("Cannot translate: COde contains variables or parameters of structure type.\n");
+	printf("Cannot translate: Code contains variables or parameters of structure type.\n");
 	exit(0);
 	switch(location){
 		case 1:
