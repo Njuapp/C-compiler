@@ -313,21 +313,25 @@ void labelOptimize(InterCodes start, InterCodes end){
 void tempOptimize(){
 	for(int i = 0; i < varIndex; i ++){
 		int cnt_def =0;
-		int unoptim = 0;
+		int cnt_assign = 0;
 		for(struct InterCodesList* p =varTable[i].list; p ; p = p->next){
 			if(p->type==1)
 				cnt_def++;
 			else if(p->type==2)
-				unoptim=1;
+				continue;	
+			else if(p->type==0 && p->codes->code->kind == iASSIGN)
+				cnt_assign ++;
 			else if(p->type==0 && p->codes->code->kind != iASSIGN)
-				unoptim=1;
+				continue;
 		}
-		if(cnt_def !=1||unoptim)continue;
+		if(!(cnt_def==1&& cnt_assign==1))continue;
 		InterCode genTemp = NULL;
+		InterCodes toRemove = NULL;
+		int remove = 0;
 		for(struct InterCodesList* p =varTable[i].list; p ; p = p->next){ 
 			if(p->type == 1){
 				genTemp = p->codes->code;
-				InterCodes toRemove = p->codes;
+				toRemove = p->codes;
 				toRemove->prev->next = toRemove->next;
 				toRemove->next->prev = toRemove->prev;
 			}
