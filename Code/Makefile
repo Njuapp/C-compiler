@@ -5,7 +5,7 @@
 CC = gcc 
 FLEX = flex
 BISON = bison
-CFLAGS = -std=c99 
+CFLAGS = -std=c99 -g
 
 # 编译目标：src目录下的所有.c文件
 CFILES = $(shell find ./ -name "*.c")
@@ -17,7 +17,7 @@ YFC = $(shell find ./ -name "*.y" | sed s/[^/]*\\.y/syntax.tab.c/)
 LFO = $(LFC:.c=.o)
 YFO = $(YFC:.c=.o)
 
-parser: syntax $(filter-out $(LFO),$(OBJS)) 
+parser: clean syntax $(filter-out $(LFO),$(OBJS)) 
 	$(CC) -o parser $(filter-out $(LFO),$(OBJS)) -lfl -ly 
 
 syntax: lexical syntax-c
