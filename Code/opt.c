@@ -224,7 +224,7 @@ void scanCode(InterCodes start, InterCodes end){
 				addTable(code->operate1.op, 2, 0, p);
 				break;
 			case iCALL:
-				addTable(code->operate1.op, 1, 0, p);
+				addTable(code->operate1.op, 2, 0, p);
 				break;
 			case iPARAM:
 				addTable(code->operate1.op, 2, 0, p);
@@ -355,12 +355,13 @@ void interOptimize(){
 	varTable = (struct OperandTable*)malloc(sizeof(struct OperandTable)*getVarCount());
 	labelTable = (struct OperandTable*)malloc(sizeof(struct OperandTable)*getLabelCount());
 
-	printf("start to scan\n");
+//	printf("start to scan\n");
 	scanCode(root->next, NULL);
 
 	labelOptimize(root->next, NULL);
 	
 	tempOptimize();
+/*
 	printf(" %d\n", varIndex);
 
 	for(int i=0;i<varIndex;i++){
@@ -374,6 +375,6 @@ void interOptimize(){
 		printf("\n");
 	}
 	printf("DEBUG END\n\n");
-
+*/
 }
 
