@@ -310,6 +310,41 @@ void labelOptimize(InterCodes start, InterCodes end){
 	}
 }
 
+void tempOptimize(){
+	for(int i = 0; i < varIndex; i ++){
+		int cnt_def =0;
+		int unoptim = 0;
+		for(struct InterCodesList* p =varTable[i].list; p ; p = p->next){
+			if(p->type==1)
+				cnt_def++;
+			else if(p->type==2)
+				unoptim=1;
+			else if(p->type==0 && p->codes->code->kind != iASSIGN)
+				unoptim=1;
+		}
+		if(cnt_def !=1||unoptim)continue;
+		InterCode genTemp = NULL;
+		for(struct InterCodesList* p =varTable[i].list; p ; p = p->next){ 
+			if(p->type == 1){
+				genTemp = p->codes->code;
+				InterCodes toRemove = p->codes;
+				toRemove->prev->next = toRemove->next;
+				toRemove->next->prev = toRemove->prev;
+			}
+			if(p->type==0&& p->codes->code->kind == iASSIGN){
+				InterCode inter = p->codes->code;
+				inter->kind = genTemp ->kind;
+				inter->operate4.op2 = genTemp->operate4.op2;
+
+				inter->operate4.op3 = genTemp->operate4.op3;
+				inter->operate4.op4 = genTemp->operate4.op4;
+			}
+
+		}
+
+	}
+}
+
 void interOptimize(){
 	InterCodes root = codeField;
 	controlOptimize(root->next, NULL);
@@ -319,39 +354,11 @@ void interOptimize(){
 	printf("start to scan\n");
 	scanCode(root->next, NULL);
 
-/*
-	for(int i=0;i<labelIndex;i++){
-		printf("%s\t", labelTable[i].op->label);
-		struct InterCodesList *list = labelTable[i].list;
-		for(struct InterCodesList *p = list; p!=NULL; p = p->next){
-			printf("%d, %d.\t", p->type, p->codes->code->kind);
-		}
-		printf("\n");
-	}
-	for(int i=0;i<varIndex;i++){
-		printf("%s\t", varTable[i].op->var);
-		struct InterCodesList *list = varTable[i].list;
-		for(struct InterCodesList *p = list; p!=NULL; p = p->next){
-			printf("%d, %d.\t", p->type, p->codes->code->kind);
-		}
-		printf("\n");
-	}
-*/
-
 	labelOptimize(root->next, NULL);
 	
-	
-	printf("%d, %d\n", labelIndex, varIndex);
-	for(int i=0;i<labelIndex;i++){
-		if(labelTable[i].op){
-			printf("%s\t", labelTable[i].op->label);
-			struct InterCodesList *list = labelTable[i].list;
-			for(struct InterCodesList *p = list; p!=NULL; p = p->next){
-				printf("%d, %d.\t", p->type, p->codes->code->kind);
-			}
-		}
-		printf("\n");
-	}
+	tempOptimize();
+	printf(" %d\n", varIndex);
+
 	for(int i=0;i<varIndex;i++){
 		if(varTable[i].op){
 			printf("%s\t", varTable[i].op->var);
