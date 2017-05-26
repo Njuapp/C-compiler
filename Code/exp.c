@@ -775,7 +775,10 @@ make_helper(ExpArray){
 				Operand op3 = NULL;
 				if(is_constant(op2->kind)){
 					assert(op2->kind == CONSTANT_INT);
-					op1 = new_operand(CONSTANT_INT, op2->intValue * 4, 0, NULL);
+					int size = 4;
+					if(parent->typeinfo->kind == ARRAY)
+						size = parent->typeinfo->array.offset;
+					op1 = new_operand(CONSTANT_INT, op2->intValue * size, 0, NULL);
 				}
 				else
 				{
