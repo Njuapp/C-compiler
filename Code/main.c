@@ -7,9 +7,9 @@ extern int yylineno;
 int main(int argc, char** argv) {
 	if(argc <= 2) return 1;
 	int i;
-	FILE *f = fopen(argv[0], "r");
+	FILE *f = fopen(argv[1], "r");
 	if(!f) {
-		perror(argv[0]);
+		perror(argv[1]);
 		return 1;
 	}
 	yyrestart(f);
@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
 	//eval(root,0);
 	fclose(f);
 
-	f = fopen(argv[1], "w+");
+	f = fopen(argv[2], "w+");
 	print_intercode(f);
 	fclose(f);
 	return 0;
