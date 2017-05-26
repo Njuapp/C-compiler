@@ -861,10 +861,9 @@ make_helper(ExpID){
 		//intercode
 		if(parent->place) free(parent->place);
 		if(var->type->kind == ARRAY && var->temp_name->kind == VARIABLE){
-			Operand op1 = new_operand(ADDRESS, 0, 0, new_temp());
-			Operand op2 = var->temp_name;
-			INIT_2_OP(iADDRESS)
-			parent->place = op1;
+			char* arrayAddr = (char*)malloc(sizeof(char)*20);
+			sprintf(arrayAddr, "&%s",var->temp_name->var);
+			parent->place = new_operand(ADDRESS, 0, 0.0, arrayAddr );
 		}
 		else{
 			parent->place = var->temp_name;
