@@ -62,7 +62,7 @@ extern InterCodes codeField, context;
 void intercodeInit();
 void addCode(InterCode code, InterCodes position/*=context*/);
 int op_num(int kind);
-void print_intercode();
+void print_intercode(FILE *f);
 char* new_temp();
 char* new_label();
 char* new_var();

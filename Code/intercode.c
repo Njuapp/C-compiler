@@ -288,12 +288,15 @@ char *intercodeToStr(InterCode code){
 	return text;
 }
 
-void print_intercode(){
+void print_intercode(FILE *f){
 	InterCodes p = codeField->next;
 	while(p){
 		InterCode code = p->code;
 		char *text = intercodeToStr(code);
-		printf("%s", text);
+		if(f)
+			fprintf(f, "%s", text);
+		else
+			printf("%s", text);
 		free(text);
 		p = p->next;
 	}

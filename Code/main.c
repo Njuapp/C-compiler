@@ -5,21 +5,22 @@ int yyparse();
 void yyrestart(FILE* f);
 extern int yylineno;
 int main(int argc, char** argv) {
-	if(argc <= 1) return 1;
+	if(argc <= 2) return 1;
 	int i;
-	for (i = 1; i < argc; i++) {
-		FILE *f = fopen(argv[i], "r");
-		if(!f) {
-			perror(argv[i]);
-			return 1;
-		}
-		yyrestart(f);
-		yylineno = 1;
-		yyparse();
-		//eval(root,0);
-		fclose(f);
-
-		print_intercode();
+	FILE *f = fopen(argv[0], "r");
+	if(!f) {
+		perror(argv[0]);
+		return 1;
 	}
+	yyrestart(f);
+	yylineno = 1;
+	yyparse();
+	//eval(root,0);
+	fclose(f);
+
+	f = fopen(argv[1], "w+");
+	print_intercode(f);
+	fclose(f);
 	return 0;
 }
+
