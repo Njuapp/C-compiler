@@ -360,7 +360,7 @@ void interOptimize(){
 
 	labelOptimize(root->next, NULL);
 	
-	tempOptimize();
+//	tempOptimize();
 /*
 	printf(" %d\n", varIndex);
 
