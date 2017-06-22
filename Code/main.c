@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "grammar_tree.h"
+#include "assemble.h"
 int yyparse();
 void yyrestart(FILE* f);
 extern int yylineno;
@@ -20,6 +21,8 @@ int main(int argc, char** argv) {
 
 	f = fopen(argv[2], "w+");
 	print_intercode(f);
+	fprintf(f,"\n\n\n");
+	generate_assemble(f);	
 	fclose(f);
 	return 0;
 }

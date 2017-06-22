@@ -8,6 +8,8 @@
 
 #define LABEL_MAX 10000
 #define WORD_LENGTH 4
+#define STRING_LENGTH 20
+#define CODE_LENGTH 200
 
 struct Operand_ {
 	enum { CONSTANT_INT, CONSTANT_FLOAT, VARIABLE, FUNC_NAME, ADDRESS, oLABEL, oRELOP } kind;	

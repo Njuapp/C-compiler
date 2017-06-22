@@ -1,5 +1,4 @@
 #include "intercode.h"
-#define STRING_LENGTH 20
 
 InterCodes codeField, context;
 
@@ -160,7 +159,6 @@ int getLabelCount(){
 	return count_label;
 }
 
-#define CODE_LENGTH 50
 
 char* get_str(Operand op){
 	char *text = malloc(sizeof(char)*CODE_LENGTH);
@@ -256,7 +254,7 @@ char *intercodeToStr(InterCode code){
 			break;
 		case iDEC:
 			assert(op1->kind == VARIABLE && op2->kind == CONSTANT_INT);
-			sprintf(text, "DEC %s %d\n", op1->var, op2->intValue  );
+			sprintf(text, "DEC %s %d\n", op1->var, op2->intValue);
 			break;
 		case iADD:
 			sprintf(text, "%s := %s + %s\n", op1->var , get_str(op2), get_str(op3));
