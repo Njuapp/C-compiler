@@ -39,18 +39,18 @@ void define_var(FILE *f){
 				break;
 		}
 		if(name){
-			struct varName* p = root;
-			while(p->next){
-				if(!strcmp(name, p->next->name)){
+			struct varName* pv = root;
+			while(pv->next){
+				if(!strcmp(name, pv->next->name)){
 					name = NULL;
 					break;
 				}
-				p = p->next;
+				pv = pv->next;
 			}
 			if(name){
-				p->next = (struct varName*)malloc(sizeof(struct varName));
-				p->next->next = NULL;
-				p->next->name = name;
+				pv->next = (struct varName*)malloc(sizeof(struct varName));
+				pv->next->next = NULL;
+				pv->next->name = name;
 				fprintf(f, "%s: .word 0\n", name);
 			}
 		}
@@ -152,7 +152,7 @@ char *intercodeToAssemble(InterCode code) {
 			sprintf(text, "%s := CALL %s\n", op1->var, get_str(op2));
 			break;
 		case iDEC:
-			sprintf(text, "DEC %s %d\n", op1->var, op2->intValue);
+			//sprintf(text, "DEC %s %d\n", op1->var, op2->intValue);
 			break;
 		case iADD:
 			sprintf(text, "%s%s%s%s", get_var(op2, 1), get_var(op3, 2), warp_assemble("add $t1, $t1, $t2"), store_var(op1));
