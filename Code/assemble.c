@@ -134,12 +134,15 @@ char *intercodeToAssemble(InterCode code) {
 			sprintf(text, "%s%s", get_var(op2, 1), store_var(op1));
 			break;
 		case iADDRESS:
+			//TODO
 			sprintf(text, "%s := &%s\n", op1->addr, op2->var);
 			break; 
 		case iGET:
+			//TODO
 			sprintf(text, "%s := *%s\n",op1->var, get_str(op2));
 			break;
 		case iPOST:
+			//TODO
 			sprintf(text, "*%s := %s\n",op1->addr, get_str(op2));
 			break;
 		case iWRITE:
@@ -152,7 +155,7 @@ char *intercodeToAssemble(InterCode code) {
 			sprintf(text, "%s := CALL %s\n", op1->var, get_str(op2));
 			break;
 		case iDEC:
-			//sprintf(text, "DEC %s %d\n", op1->var, op2->intValue);
+			sprintf(text, "");
 			break;
 		case iADD:
 			sprintf(text, "%s%s%s%s", get_var(op2, 1), get_var(op3, 2), warp_assemble("add $t1, $t1, $t2"), store_var(op1));
