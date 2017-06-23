@@ -58,14 +58,14 @@ void define_var(FILE *f){
 	}
 }
 
-int num_arg(InterCodes p){
+int num_arg(InterCodes p, int up){
 	int num = 0;
-	p = p->next;
+	(up)?(p = p->prev):(p = p->next);
 	while(p){
 		if(p->code->kind != iARG)
 			break;
 		num++;
-		p = p->next;
+		(up)?(p = p->prev):(p = p->next);
 	}
 	return num;
 }
@@ -163,12 +163,16 @@ char *intercodeToAssemble(InterCode code, InterCodes node) {
 			break;
 		case iPARAM:
 			//TODO
+			t1 = (char*)malloc(sizeof(char)*ASSEMBLE_LENGTH);
 			if(param_index < 4){
-				t1 = (char*)malloc(sizeof(char)*ASSEMBLE_LENGTH);
 				sprintf(t1, "sw $a%d, %s", param_index, op1->var);
 				sprintf(text, "%s", warp_assemble(t1));
-				free(t1);
+			}else{
+				int1 = param_index - 4;
+				sprintf(t1, "lw $t1, %d($sp)", 4 * (int1 + 1));
+				sprintf(text, "%s%s", warp_assemble(t1), store_var(op1));
 			}
+			free(t1);
 			param_index++;
 			break;
 		case iASSIGN:
@@ -192,7 +196,15 @@ char *intercodeToAssemble(InterCode code, InterCodes node) {
 		case iCALL:
 			t1 = (char*)malloc(sizeof(char)*ASSEMBLE_LENGTH);
 			sprintf(t1, "jal %s_func", op2->func_name);
-			sprintf(text, "%s%s%s%s%s%s%s", warp_assemble("addi $sp, $sp, -4"), warp_assemble("sw $ra, 0($sp)"), warp_assemble(t1), warp_assemble("lw $ra, 0($sp)"), warp_assemble("addi $sp, $sp, 4"), warp_assemble("move $t1, $v0"), store_var(op1));
+			t2 = (char*)malloc(sizeof(char)*ASSEMBLE_LENGTH);
+			int1 = num_arg(node, 1);
+			if(int1 <= 4){
+				int1 = 4;
+			}
+			sprintf(t2, "addi $sp, $sp, %d", 4*(int1-3));
+			sprintf(text, "%s%s%s%s%s%s%s", warp_assemble("addi $sp, $sp, -4"), warp_assemble("sw $ra, 0($sp)"), warp_assemble(t1), warp_assemble("lw $ra, 0($sp)"), warp_assemble(t2), warp_assemble("move $t1, $v0"), store_var(op1));
+			free(t1);
+			free(t2);
 			break;
 		case iDEC:
 			//sprintf(text, "DEC %s %d\n", op1->var, op2->intValue);
@@ -233,12 +245,14 @@ char *intercodeToAssemble(InterCode code, InterCodes node) {
 			break;
 		case iARG:
 			//TODO
-			int1 = num_arg(node);
+			int1 = num_arg(node, 0);
 			if(int1 < 4){
 				t1 = (char*)malloc(sizeof(char)*ASSEMBLE_LENGTH);
-				sprintf(t1, "lw $a%d, %s", int1, op1->var);
-				sprintf(text, "%s", warp_assemble(t1));
+				sprintf(t1, "move $a%d, $t1", int1);
+				sprintf(text, "%s%s", get_var(op1, 1), warp_assemble(t1));
 				free(t1);
+			}else{
+				sprintf(text, "%s%s%s", get_var(op1, 1), warp_assemble("addi $sp, $sp, -4"), warp_assemble("sw $t1, 0($sp)"));
 			}
 			break;
 		default:
