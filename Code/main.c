@@ -20,8 +20,8 @@ int main(int argc, char** argv) {
 	fclose(f);
 
 	f = fopen(argv[2], "w+");
-	print_intercode(f);
-	fprintf(f,"\n\n\n");
+//	print_intercode(f);
+//	fprintf(f,"\n\n\n");
 	generate_assemble(f);	
 	fclose(f);
 	return 0;

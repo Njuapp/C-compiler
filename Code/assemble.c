@@ -58,12 +58,17 @@ void define_var(FILE *f){
 	}
 }
 
-struct Inference {
-	char* name;
-	int inReg;
-	char* reg;
-	char* mem;
-};
+int num_arg(InterCodes p){
+	int num = 0;
+	p = p->next;
+	while(p){
+		if(p->code->kind != iARG)
+			break;
+		num++;
+		p = p->next;
+	}
+	return num;
+}
 
 char* get_var(Operand op, int reg){
 	if(op->kind == CONSTANT_FLOAT || op->kind == FUNC_NAME)
@@ -113,7 +118,7 @@ char* load_from_addr(int srcreg, int destreg){
 	return warp_assemble(result);
 }
 
-char *intercodeToAssemble(InterCode code) {
+char *intercodeToAssemble(InterCode code, InterCodes node) {
 	char *text = malloc(sizeof(char)*CODE_LENGTH);
 	Operand op1, op2, op3, op4;
 	int op_number = op_num(code->kind);
@@ -135,13 +140,19 @@ char *intercodeToAssemble(InterCode code) {
 		op4 = code->operate4.op4;
 	}
 	char *t1 = NULL, *t2 = NULL;
-	printf("intercode kind: %d\n", code->kind);
+	int int1, int2;
+	static int param_index = 0;
 	switch(code->kind){
 		case iLABEL:
 			sprintf(text, "%s:\n", op1->label);
 			break;
 		case iFUNC:
-			sprintf(text, "%s:\n", op1->func_name);
+			if(!strcmp(op1->func_name, "main")){
+				sprintf(text, "main:\n");
+			}else{
+				sprintf(text, "%s_func:\n", op1->func_name);
+			}
+			param_index = 0;
 			break;
 		case iGOTO:
 			sprintf(text, "j %s", op1->label);
@@ -151,21 +162,25 @@ char *intercodeToAssemble(InterCode code) {
 			sprintf(text, "%s%s%s\n", get_var(op1, 1), warp_assemble("move $v0, $t1"), warp_assemble("jr $ra"));
 			break;
 		case iPARAM:
-			sprintf(text, "PARAM %s\n", op1->var);
+			//TODO
+			if(param_index < 4){
+				t1 = (char*)malloc(sizeof(char)*ASSEMBLE_LENGTH);
+				sprintf(t1, "sw $a%d, %s", param_index, op1->var);
+				sprintf(text, "%s", warp_assemble(t1));
+				free(t1);
+			}
+			param_index++;
 			break;
 		case iASSIGN:
 			sprintf(text, "%s%s", get_var(op2, 1), store_var(op1));
 			break;
 		case iADDRESS:
-			//TODO
 			sprintf(text, "%s%s", get_addr(op2, 1), store_var(op1));
 			break; 
 		case iGET:
-			//TODO
 			sprintf(text, "%s%s%s",get_var(op2, 2), load_from_addr(2, 1), store_var(op1));
 			break;
 		case iPOST:
-			//TODO
 			sprintf(text, "%s%s%s",get_var(op2, 1), get_var(op1, 2), store2addr(1,2));
 			break;
 		case iWRITE:
@@ -175,7 +190,9 @@ char *intercodeToAssemble(InterCode code) {
 			sprintf(text, "%s%s%s%s%s%s%s", warp_assemble("addi $sp, $sp, -4"), warp_assemble("sw $ra, 0($sp)"), warp_assemble("jal read"), warp_assemble("lw $ra, 0($sp)"), warp_assemble("addi $sp, $sp, 4"), warp_assemble("move $t1, $v0"), store_var(op1));
 			break;
 		case iCALL:
-			sprintf(text, "%s := CALL %s\n", op1->var, get_str(op2));
+			t1 = (char*)malloc(sizeof(char)*ASSEMBLE_LENGTH);
+			sprintf(t1, "jal %s_func", op2->func_name);
+			sprintf(text, "%s%s%s%s%s%s%s", warp_assemble("addi $sp, $sp, -4"), warp_assemble("sw $ra, 0($sp)"), warp_assemble(t1), warp_assemble("lw $ra, 0($sp)"), warp_assemble("addi $sp, $sp, 4"), warp_assemble("move $t1, $v0"), store_var(op1));
 			break;
 		case iDEC:
 			//sprintf(text, "DEC %s %d\n", op1->var, op2->intValue);
@@ -215,7 +232,14 @@ char *intercodeToAssemble(InterCode code) {
 //			sprintf(text, "IF %s %s %s GOTO %s\n", t1, op2->relop, t2, op4->label);
 			break;
 		case iARG:
-			sprintf(text, "ARG %s\n",get_str(op1));
+			//TODO
+			int1 = num_arg(node);
+			if(int1 < 4){
+				t1 = (char*)malloc(sizeof(char)*ASSEMBLE_LENGTH);
+				sprintf(t1, "lw $a%d, %s", int1, op1->var);
+				sprintf(text, "%s", warp_assemble(t1));
+				free(t1);
+			}
 			break;
 		default:
 			assert(0);
@@ -254,7 +278,7 @@ void generate_assemble(FILE *f){
 	InterCodes p = codeField->next;
 	while(p){
 		InterCode code = p->code;
-		char *text = intercodeToAssemble(code);
+		char *text = intercodeToAssemble(code, p);
 		if(f)
 			fprintf(f, "%s", text);
 		else
