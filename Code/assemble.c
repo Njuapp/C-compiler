@@ -166,7 +166,7 @@ char *intercodeToAssemble(InterCode code) {
 			break;
 		case iPOST:
 			//TODO
-			sprintf(text, "%s%s%s",get_var(op2, 1), get_addr(op1, 2), store2addr(1,2));
+			sprintf(text, "%s%s%s",get_var(op2, 1), get_var(op1, 2), store2addr(1,2));
 			break;
 		case iWRITE:
 			sprintf(text, "%s%s%s%s%s%s%s", get_var(op1, 1), warp_assemble("move $a0, $t1"), warp_assemble("addi $sp, $sp, -4"), warp_assemble("sw $ra, 0($sp)"), warp_assemble("jal write"), warp_assemble("lw $ra, 0($sp)"), warp_assemble("addi $sp, $sp, 4"));
