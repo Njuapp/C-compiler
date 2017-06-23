@@ -78,6 +78,17 @@ char* get_var(Operand op, int reg){
 	else if(op->kind == VARIABLE){
 		sprintf(result, "lw %s, %s", sreg, op->var);
 	}
+	else if(op->kind == ADDRESS){
+		sprintf(result, "lw %s, %s", sreg, op->var);
+	}
+	return warp_assemble(result);
+}
+
+char* get_addr(Operand op, int reg){
+	char sreg[20];
+	sprintf(sreg, "$t%d", reg);
+	char result[ASSEMBLE_LENGTH];
+	sprintf(result, "la %s, %s", sreg, op->var);
 	return warp_assemble(result);
 }
 
@@ -87,6 +98,18 @@ char* store_var(Operand op) {
 	//TODO:ADDRESS
 	char result[ASSEMBLE_LENGTH];
 	sprintf(result, "sw $t1, %s", op->var);
+	return warp_assemble(result);
+}
+
+char* store2addr(int srcreg, int destreg){
+	char result[ASSEMBLE_LENGTH];
+	sprintf(result, "sw $t%d, 0($t%d)", srcreg, destreg);
+	return warp_assemble(result);
+}
+
+char* load_from_addr(int srcreg, int destreg){
+	char result[ASSEMBLE_LENGTH];
+	sprintf(result, "lw $t%d, 0($t%d)", destreg, srcreg);
 	return warp_assemble(result);
 }
 
@@ -135,15 +158,15 @@ char *intercodeToAssemble(InterCode code) {
 			break;
 		case iADDRESS:
 			//TODO
-			sprintf(text, "%s := &%s\n", op1->addr, op2->var);
+			sprintf(text, "%s%s", get_addr(op2, 1), store_var(op1));
 			break; 
 		case iGET:
 			//TODO
-			sprintf(text, "%s := *%s\n",op1->var, get_str(op2));
+			sprintf(text, "%s%s%s",get_var(op2, 2), load_from_addr(2, 1), store_var(op1));
 			break;
 		case iPOST:
 			//TODO
-			sprintf(text, "*%s := %s\n",op1->addr, get_str(op2));
+			sprintf(text, "%s%s%s",get_var(op2, 1), get_addr(op1, 2), store2addr(1,2));
 			break;
 		case iWRITE:
 			sprintf(text, "%s%s%s%s%s%s%s", get_var(op1, 1), warp_assemble("move $a0, $t1"), warp_assemble("addi $sp, $sp, -4"), warp_assemble("sw $ra, 0($sp)"), warp_assemble("jal write"), warp_assemble("lw $ra, 0($sp)"), warp_assemble("addi $sp, $sp, 4"));
