@@ -126,7 +126,6 @@ char *intercodeToAssemble(InterCode code) {
 			break;
 		case iRETURN:
 			sprintf(text, "%s%s%s\n", get_var(op1, 1), warp_assemble("move $v0, $t1"), warp_assemble("jr $ra"));
-			free(t1);
 			break;
 		case iPARAM:
 			sprintf(text, "PARAM %s\n", op1->var);
@@ -135,12 +134,15 @@ char *intercodeToAssemble(InterCode code) {
 			sprintf(text, "%s%s", get_var(op2, 1), store_var(op1));
 			break;
 		case iADDRESS:
+			//TODO
 			sprintf(text, "%s := &%s\n", op1->addr, op2->var);
 			break; 
 		case iGET:
+			//TODO
 			sprintf(text, "%s := *%s\n",op1->var, get_str(op2));
 			break;
 		case iPOST:
+			//TODO
 			sprintf(text, "*%s := %s\n",op1->addr, get_str(op2));
 			break;
 		case iWRITE:
@@ -154,23 +156,33 @@ char *intercodeToAssemble(InterCode code) {
 			break;
 		case iDEC:
 			//sprintf(text, "DEC %s %d\n", op1->var, op2->intValue);
-			text = NULL;
+			sprintf(text, "");
 			break;
 		case iADD:
 			sprintf(text, "%s%s%s%s", get_var(op2, 1), get_var(op3, 2), warp_assemble("add $t1, $t1, $t2"), store_var(op1));
 			break;
 		case iSUB:
-			sprintf(text, "%s := %s - %s\n", op1->var , get_str(op2), get_str(op3));
+			sprintf(text, "%s%s%s%s", get_var(op2, 1), get_var(op3, 2), warp_assemble("sub $t1, $t1, $t2"), store_var(op1));
 			break;
-		case iMUL:
-			sprintf(text, "%s := %s * %s\n", op1->var , get_str(op2), get_str(op3));
+		case iMUL:	
+			sprintf(text, "%s%s%s%s", get_var(op2, 1), get_var(op3, 2), warp_assemble("mul $t1, $t1, $t2"), store_var(op1));
 			break;
 		case iDIV:
-			sprintf(text, "%s := %s / %s\n", op1->var , get_str(op2), get_str(op3));
+			sprintf(text, "%s%s%s%s%s", get_var(op2, 1), get_var(op3, 2), warp_assemble("div $t1, $t2"), warp_assemble("mflo $t1"), store_var(op1));
 			break;
 		case iREGOTO:
 			if(!strcmp(op2->relop, ">=")){
 				t1 = "bge";
+			}else if(!strcmp(op2->relop, ">")){
+				t1 = "bgt";
+			}else if(!strcmp(op2->relop, "<=")){
+				t1 = "ble";
+			}else if(!strcmp(op2->relop, "<")){
+				t1 = "blt";
+			}else if(!strcmp(op2->relop, "==")){
+				t1 = "beq";
+			}else if(!strcmp(op2->relop, "!=")){
+				t1 = "bne";
 			}
 			char generateLine[CODE_LENGTH];
 			sprintf(generateLine, "%s $t1, $t2, %s", t1, op4->label);
@@ -220,10 +232,6 @@ void generate_assemble(FILE *f){
 	while(p){
 		InterCode code = p->code;
 		char *text = intercodeToAssemble(code);
-		if(!text){
-			p = p -> next;
-			continue;
-		}
 		if(f)
 			fprintf(f, "%s", text);
 		else
