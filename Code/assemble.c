@@ -154,6 +154,7 @@ char *intercodeToAssemble(InterCode code) {
 			break;
 		case iDEC:
 			//sprintf(text, "DEC %s %d\n", op1->var, op2->intValue);
+			text = NULL;
 			break;
 		case iADD:
 			sprintf(text, "%s%s%s%s", get_var(op2, 1), get_var(op3, 2), warp_assemble("add $t1, $t1, $t2"), store_var(op1));
@@ -219,6 +220,10 @@ void generate_assemble(FILE *f){
 	while(p){
 		InterCode code = p->code;
 		char *text = intercodeToAssemble(code);
+		if(!text){
+			p = p -> next;
+			continue;
+		}
 		if(f)
 			fprintf(f, "%s", text);
 		else
